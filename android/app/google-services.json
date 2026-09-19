@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "15270968768",
+    "project_id": "catfisense-db-4cda7",
+    "storage_bucket": "catfisense-db-4cda7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15270968768:android:376e7b584cf767d4a0dc25",
+        "android_client_info": {
+          "package_name": "com.catfisense.catfisense"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcLOEZWdWxcRcohECKml8JfqZ8iRzn9o8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

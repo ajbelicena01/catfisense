@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "readings": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$entryId": {
+          ".write": "!data.exists()",
+          ".validate": "newData.hasChildren(['ph', 'temperature', 'dissolvedOxygen', 'ammonia', 'recordedAt'])"
+        }
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}

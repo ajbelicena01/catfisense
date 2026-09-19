@@ -1,0 +1,26 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "catfisense-db-4cda7",
+          "appId": "1:15270968768:android:376e7b584cf767d4a0dc25",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "catfisense-db-4cda7",
+          "configurations": {
+            "android": "1:15270968768:android:376e7b584cf767d4a0dc25",
+            "ios": "1:15270968768:ios:c278636b50d059b3a0dc25",
+            "web": "1:15270968768:web:ab9ceb9190e6530da0dc25"
+          }
+        }
+      }
+    }
+  },
+  "database": {
+    "rules": "database.rules.json"
+  }
+}
