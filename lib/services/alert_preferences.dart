@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'notification_service.dart';
+
 const _pushKey = 'pushAlertsEnabled';
 const _smsKey = 'smsAlertsEnabled';
 const _consentShownKey = 'alertConsentShown';
@@ -12,10 +14,13 @@ const _consentShownKey = 'alertConsentShown';
 /// OS permission for receiving ordinary SMS, unlike push notifications which
 /// do require one).
 class AlertPreferences extends ChangeNotifier {
-  AlertPreferences({required bool pushEnabled, required bool smsEnabled, required bool consentShown})
-      : _pushEnabled = pushEnabled,
-        _smsEnabled = smsEnabled,
-        _consentShown = consentShown;
+  AlertPreferences({
+    required bool pushEnabled,
+    required bool smsEnabled,
+    required bool consentShown,
+  }) : _pushEnabled = pushEnabled,
+       _smsEnabled = smsEnabled,
+       _consentShown = consentShown;
 
   bool _pushEnabled;
   bool _smsEnabled;
@@ -39,7 +44,17 @@ class AlertPreferences extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_pushKey, value);
-    if (value) await requestNotificationPermission();
+    if (!value) {
+      await NotificationService.instance.cancelPersistentMonitoring();
+      return;
+    }
+
+    final granted = await requestNotificationPermission();
+    if (granted) {
+      await NotificationService.instance.showPersistentMonitoring(
+        body: 'Waiting for the latest pond sensor reading.',
+      );
+    }
   }
 
   Future<void> setSmsEnabled(bool value) async {

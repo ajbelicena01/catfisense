@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../pages/history_page.dart';
@@ -11,10 +9,8 @@ import '../theme/app_theme.dart';
 enum BottomNavTab { home, history, insights, settings }
 
 /// Persistent bottom navigation shown on every main screen (Home, History,
-/// Insights, Settings). Self-contained — it does its own navigation and its
-/// own "simulate a reading" write — so any page can drop it in without
-/// wiring up callbacks, the same way [AppDrawer] needs no help from its host
-/// page either.
+/// Insights, Settings). It owns its navigation and can explicitly refresh the
+/// newest RTDB reading without writing test data.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.current});
 
@@ -34,27 +30,39 @@ class AppBottomNav extends StatelessWidget {
     if (current == BottomNavTab.insights) return;
     final reading = await SensorRepository().latestReading().first;
     if (!context.mounted) return;
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => reading == null
-          ? const RecommendationsPage()
-          : RecommendationsPage(
-              ph: reading.ph,
-              temperature: reading.temperature,
-              dissolvedOxygen: reading.dissolvedOxygen,
-              ammonia: reading.ammonia,
-            ),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => reading == null
+            ? const RecommendationsPage()
+            : RecommendationsPage(
+                ph: reading.ph,
+                temperature: reading.temperature,
+                dissolvedOxygen: reading.dissolvedOxygen,
+                ammonia: reading.ammonia,
+              ),
+      ),
+    );
   }
 
-  Future<void> _simulateReading() async {
-    final random = Random();
-    await SensorRepository().pushSimulatedReading(
-      ph: 5.5 + random.nextDouble() * 4.5,
-      temperature: 18 + random.nextDouble() * 20,
-      dissolvedOxygen: random.nextDouble() * 8,
-      ammonia: random.nextDouble() * 0.1,
-      batteryPercent: 60 + random.nextInt(41),
-    );
+  Future<void> _refreshLatestReading(BuildContext context) async {
+    try {
+      final reading = await SensorRepository().fetchLatestReading();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            reading == null
+                ? 'No sensor readings are available yet.'
+                : 'Latest sensor reading refreshed.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not refresh sensor readings.')),
+      );
+    }
   }
 
   @override
@@ -69,7 +77,11 @@ class AppBottomNav extends StatelessWidget {
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: palette.border),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
@@ -83,9 +95,10 @@ class AppBottomNav extends StatelessWidget {
             _NavIcon(
               icon: Icons.show_chart,
               active: current == BottomNavTab.history,
-              onTap: () => _push(context, BottomNavTab.history, const HistoryPage()),
+              onTap: () =>
+                  _push(context, BottomNavTab.history, const HistoryPage()),
             ),
-            _CenterRefreshButton(onTap: _simulateReading),
+            _CenterRefreshButton(onTap: () => _refreshLatestReading(context)),
             _NavIcon(
               icon: Icons.lightbulb_outline,
               active: current == BottomNavTab.insights,
@@ -94,7 +107,8 @@ class AppBottomNav extends StatelessWidget {
             _NavIcon(
               icon: Icons.settings_outlined,
               active: current == BottomNavTab.settings,
-              onTap: () => _push(context, BottomNavTab.settings, const SettingsPage()),
+              onTap: () =>
+                  _push(context, BottomNavTab.settings, const SettingsPage()),
             ),
           ],
         ),
@@ -104,7 +118,11 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class _NavIcon extends StatelessWidget {
-  const _NavIcon({required this.icon, required this.onTap, this.active = false});
+  const _NavIcon({
+    required this.icon,
+    required this.onTap,
+    this.active = false,
+  });
 
   final IconData icon;
   final VoidCallback onTap;
@@ -115,7 +133,11 @@ class _NavIcon extends StatelessWidget {
     final palette = AppPalette.of(context);
     return IconButton(
       onPressed: onTap,
-      icon: Icon(icon, color: active ? palette.primary : palette.textSecondary, size: 24),
+      icon: Icon(
+        icon,
+        color: active ? palette.primary : palette.textSecondary,
+        size: 24,
+      ),
     );
   }
 }
@@ -153,7 +175,11 @@ class _CenterRefreshButtonState extends State<_CenterRefreshButton> {
               shape: BoxShape.circle,
               color: palette.primary,
               boxShadow: [
-                BoxShadow(color: palette.primary.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4)),
+                BoxShadow(
+                  color: palette.primary.withValues(alpha: 0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
             child: const Icon(Icons.refresh, color: Colors.white, size: 28),

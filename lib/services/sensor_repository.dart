@@ -29,53 +29,57 @@ class SensorRepository {
   // Pointing at the URL explicitly avoids depending on which app config won.
   FirebaseDatabase get _database =>
       _databaseOverride ??
-      FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: DefaultFirebaseOptions.currentPlatform.databaseURL);
+      FirebaseDatabase.instanceFor(
+        app: Firebase.app(),
+        databaseURL: DefaultFirebaseOptions.currentPlatform.databaseURL,
+      );
 
   DatabaseReference get _readingsRef => _database.ref('readings/$deviceId');
 
   /// Live latest reading, or null if this pond has no readings yet.
   Stream<SensorReading?> latestReading() {
-    return _readingsRef.orderByKey().limitToLast(1).onValue.map((event) {
-      final data = event.snapshot.value;
-      if (data is! Map || data.isEmpty) return null;
-      return SensorReading.fromMap(data.values.first as Map);
-    });
+    return _readingsRef
+        .orderByKey()
+        .limitToLast(1)
+        .onValue
+        .map((event) => _latestFromSnapshot(event.snapshot));
+  }
+
+  /// Fetches the newest reading from RTDB on demand, without creating or
+  /// changing any data. The live [latestReading] stream continues separately.
+  Future<SensorReading?> fetchLatestReading() async {
+    final snapshot = await _readingsRef.orderByKey().limitToLast(1).get();
+    return _latestFromSnapshot(snapshot);
+  }
+
+  SensorReading? _latestFromSnapshot(DataSnapshot snapshot) {
+    final data = snapshot.value;
+    if (data is! Map || data.isEmpty) return null;
+    return SensorReading.fromMap(data.values.first as Map);
   }
 
   /// Live readings recorded within [start, end], oldest first.
-  Stream<List<SensorReading>> history({required DateTime start, required DateTime end}) {
+  Stream<List<SensorReading>> history({
+    required DateTime start,
+    required DateTime end,
+  }) {
     return _readingsRef
         .orderByKey()
         .startAt(start.millisecondsSinceEpoch.toString())
         .endAt(end.millisecondsSinceEpoch.toString())
         .onValue
         .map((event) {
-      final data = event.snapshot.value;
-      if (data is! Map || data.isEmpty) return const <SensorReading>[];
-      final entries = data.entries.toList()
-        ..sort((a, b) => int.parse(a.key.toString()).compareTo(int.parse(b.key.toString())));
-      return entries.map((e) => SensorReading.fromMap(e.value as Map)).toList();
-    });
-  }
-
-  /// Manual test helper — pushes one fake reading when you tap refresh on
-  /// an empty dashboard. Not run automatically; real data comes from the
-  /// ESP32 writing to this same path.
-  Future<void> pushSimulatedReading({
-    required double ph,
-    required double temperature,
-    required double dissolvedOxygen,
-    required double ammonia,
-    int? batteryPercent,
-  }) {
-    final key = DateTime.now().millisecondsSinceEpoch.toString();
-    return _readingsRef.child(key).set({
-      'ph': ph,
-      'temperature': temperature,
-      'dissolvedOxygen': dissolvedOxygen,
-      'ammonia': ammonia,
-      'batteryPercent': ?batteryPercent,
-      'recordedAt': ServerValue.timestamp,
-    });
+          final data = event.snapshot.value;
+          if (data is! Map || data.isEmpty) return const <SensorReading>[];
+          final entries = data.entries.toList()
+            ..sort(
+              (a, b) => int.parse(
+                a.key.toString(),
+              ).compareTo(int.parse(b.key.toString())),
+            );
+          return entries
+              .map((e) => SensorReading.fromMap(e.value as Map))
+              .toList();
+        });
   }
 }

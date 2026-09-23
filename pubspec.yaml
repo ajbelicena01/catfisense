@@ -44,6 +44,7 @@ dependencies:
   flutter_local_notifications: ^22.0.1
   dotlottie_flutter: ^0.1.4
   firebase_database: ^12.4.4
+  firebase_messaging: ^16.0.4
 
 # IMPORTANT: build release artifacts (web, apk, ios) with
 # `--no-tree-shake-icons`. Flutter's icon tree-shaker (default-on in

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -42,11 +40,12 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowAlertConsent());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _maybeShowAlertConsent(),
+    );
     // Live-listens to readings/pond1 in Realtime Database. This is the
-    // ESP32's actual data feed — no simulated/auto-generated readings run
-    // automatically anymore. Use the refresh button below for a manual
-    // test push if no hardware is connected yet.
+    // ESP32's actual data feed. The refresh button only fetches the latest
+    // RTDB record; it never creates a simulated reading.
     _readingSubscription = _sensorRepository.latestReading().listen(_onReading);
   }
 
@@ -60,6 +59,14 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!mounted || reading == null) return;
     setState(() => _latest = reading);
     _checkForAlert(reading);
+    if (context.read<AlertPreferences>().pushEnabled) {
+      NotificationService.instance.showPersistentMonitoring(
+        body:
+            'Latest: pH ${reading.ph.toStringAsFixed(1)} '
+            '\u2022 ${reading.temperature.toStringAsFixed(0)}\u00b0C '
+            '\u2022 DO ${reading.dissolvedOxygen.toStringAsFixed(1)}',
+      );
+    }
   }
 
   void _checkForAlert(SensorReading reading) {
@@ -69,7 +76,8 @@ class _DashboardPageState extends State<DashboardPage> {
       dissolvedOxygenStatus(reading.dissolvedOxygen),
       ammoniaStatus(reading.ammonia),
     ]);
-    if (overallStatus != PondStatus.healthy && overallStatus != _lastNotifiedStatus) {
+    if (overallStatus != PondStatus.healthy &&
+        overallStatus != _lastNotifiedStatus) {
       if (context.read<AlertPreferences>().pushEnabled) {
         NotificationService.instance.showPondAlert(overallStatus);
       }
@@ -83,26 +91,20 @@ class _DashboardPageState extends State<DashboardPage> {
     if (prefs.hasShownConsent) {
       // Already decided before; just keep the OS permission in sync with
       // their saved choice (calling this is a no-op once already granted).
-      if (prefs.pushEnabled) await prefs.requestNotificationPermission();
+      if (prefs.pushEnabled) {
+        final granted = await prefs.requestNotificationPermission();
+        if (granted) {
+          await NotificationService.instance.showPersistentMonitoring(
+            body: _latest == null
+                ? 'Waiting for the latest pond sensor reading.'
+                : 'Monitoring the latest pond sensor reading.',
+          );
+        }
+      }
       return;
     }
     if (!mounted) return;
     await showAlertConsentDialog(context);
-  }
-
-  /// Manual-only test helper (tap refresh on the empty state) for pushing
-  /// one fake reading when no ESP32 is connected yet. Real data arrives
-  /// on its own via the [_readingSubscription] stream above — nothing
-  /// calls this automatically.
-  Future<void> _simulateReading() async {
-    final random = Random();
-    await _sensorRepository.pushSimulatedReading(
-      ph: 5.5 + random.nextDouble() * 4.5,
-      temperature: 18 + random.nextDouble() * 20,
-      dissolvedOxygen: random.nextDouble() * 8,
-      ammonia: random.nextDouble() * 0.1,
-      batteryPercent: 60 + random.nextInt(41),
-    );
   }
 
   String _formatTime(DateTime time) {
@@ -115,12 +117,16 @@ class _DashboardPageState extends State<DashboardPage> {
   void _openRecommendations() {
     final reading = _latest;
     if (reading == null) return;
-    Navigator.of(context).push(slidePageRoute(RecommendationsPage(
-      ph: reading.ph,
-      temperature: reading.temperature,
-      dissolvedOxygen: reading.dissolvedOxygen,
-      ammonia: reading.ammonia,
-    )));
+    Navigator.of(context).push(
+      slidePageRoute(
+        RecommendationsPage(
+          ph: reading.ph,
+          temperature: reading.temperature,
+          dissolvedOxygen: reading.dissolvedOxygen,
+          ammonia: reading.ammonia,
+        ),
+      ),
+    );
   }
 
   @override
@@ -146,8 +152,11 @@ class _DashboardPageState extends State<DashboardPage> {
                         palette: palette,
                         onTap: _openRecommendations,
                         updatedLabel: _formatTime(reading.recordedAt),
-                        onHistoryTap: () => Navigator.of(context)
-                            .push(MaterialPageRoute(builder: (_) => const HistoryPage())),
+                        onHistoryTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const HistoryPage(),
+                          ),
+                        ),
                       ),
               ),
             ),
@@ -169,17 +178,29 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 80),
       child: Column(
         children: [
-          Icon(Icons.sensors_off_outlined, size: 48, color: palette.textSecondary),
+          Icon(
+            Icons.sensors_off_outlined,
+            size: 48,
+            color: palette.textSecondary,
+          ),
           const SizedBox(height: 16),
           Text(
             'No readings yet',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: palette.textPrimary),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: palette.textPrimary,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
-            'Tap the refresh button below to simulate a reading\nuntil the pond sensor is connected.',
+            'Waiting for the pond sensor to send its first reading.\nUse refresh to check RTDB again.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: palette.textSecondary, height: 1.4),
+            style: TextStyle(
+              fontSize: 13,
+              color: palette.textSecondary,
+              height: 1.4,
+            ),
           ),
         ],
       ),
@@ -224,11 +245,21 @@ class _Loaded extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    overallStatus == PondStatus.healthy ? 'View recommendations' : 'See what to do',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: palette.primary),
+                    overallStatus == PondStatus.healthy
+                        ? 'View recommendations'
+                        : 'See what to do',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: palette.primary,
+                    ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_ios, size: 10, color: palette.primary),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 10,
+                    color: palette.primary,
+                  ),
                 ],
               ),
             ],
@@ -237,7 +268,11 @@ class _Loaded extends StatelessWidget {
         const SizedBox(height: 20),
         Text(
           'Sensor Readings',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: palette.textPrimary),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: palette.textPrimary,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -298,7 +333,11 @@ class _Loaded extends StatelessWidget {
           onTap: onHistoryTap,
           child: Text(
             'History',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: palette.textPrimary),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: palette.textPrimary,
+            ),
           ),
         ),
       ],
