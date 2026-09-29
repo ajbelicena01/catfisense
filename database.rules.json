@@ -6,11 +6,35 @@
         ".write": "auth != null && auth.uid === $uid"
       }
     },
+    "ponds": {
+      "$pondId": {
+        ".read": "auth != null && root.child('ponds').child($pondId).child('members').child(auth.uid).exists()",
+        "members": {
+          ".write": false
+        },
+        "readings": {
+          ".write": false
+        },
+        "latestReading": {
+          ".write": false
+        },
+        "alerts": {
+          ".write": false
+        },
+        "settings": {
+          ".write": "auth != null && root.child('ponds').child($pondId).child('members').child(auth.uid).val() === 'owner'"
+        }
+      }
+    },
+    "pondInvites": {
+      ".read": false,
+      ".write": false
+    },
     "readings": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
+      "$deviceId": {
+        ".read": "auth != null && root.child('ponds').child('pond1').child('members').child(auth.uid).exists()",
         "$entryId": {
-          ".write": "!data.exists()",
+          ".write": false,
           ".validate": "newData.hasChildren(['ph', 'temperature', 'dissolvedOxygen', 'ammonia', 'recordedAt'])"
         }
       }

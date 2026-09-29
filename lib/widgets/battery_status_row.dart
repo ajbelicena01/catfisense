@@ -20,6 +20,7 @@ class BatteryStatusRow extends StatelessWidget {
     final palette = AppPalette.of(context);
     final status = batteryStatus(value);
     final style = styleFor(status);
+    final accent = statusAccent(status, darkMode: palette.isDark);
     final icon = switch (status) {
       PondStatus.healthy => Icons.battery_full,
       PondStatus.warning => Icons.battery_3_bar,
@@ -36,7 +37,7 @@ class BatteryStatusRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: style.color, size: 20),
+          Icon(icon, color: accent, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -44,7 +45,14 @@ class BatteryStatusRow extends StatelessWidget {
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: palette.textPrimary),
             ),
           ),
-          Text('$value%', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: style.color)),
+          Text(
+            '${style.shortLabel}: $value%',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: palette.isDark ? palette.textPrimary : accent,
+            ),
+          ),
         ],
       ),
     );

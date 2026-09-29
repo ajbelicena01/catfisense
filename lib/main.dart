@@ -46,6 +46,16 @@ class CatfiSenseApp extends StatelessWidget {
             theme: buildLightTheme(),
             darkTheme: buildDarkTheme(),
             themeMode: theme.themeMode,
+            builder: (context, child) {
+              final mediaQuery = MediaQuery.of(context);
+              final systemScale = mediaQuery.textScaler.scale(1.0);
+              return MediaQuery(
+                data: mediaQuery.copyWith(
+                  textScaler: TextScaler.linear(systemScale * theme.textScale),
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
             home: const AuthGate(),
           );
         },

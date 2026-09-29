@@ -46,6 +46,7 @@ class _RecommendationCardState extends State<RecommendationCard> with SingleTick
     final palette = AppPalette.of(context);
     final rec = widget.recommendation;
     final style = styleFor(rec.status);
+    final accent = statusAccent(rec.status, darkMode: palette.isDark);
     return FadeTransition(
       opacity: _fade,
       child: SlideTransition(
@@ -67,7 +68,7 @@ class _RecommendationCardState extends State<RecommendationCard> with SingleTick
                 Container(
                   width: 6,
                   decoration: BoxDecoration(
-                    color: style.color,
+                    color: accent,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(18),
                       bottomLeft: Radius.circular(18),
@@ -85,8 +86,11 @@ class _RecommendationCardState extends State<RecommendationCard> with SingleTick
                           children: [
                             Container(
                               padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(color: style.background, shape: BoxShape.circle),
-                              child: Icon(rec.icon, color: style.color, size: 20),
+                              decoration: BoxDecoration(
+                                color: palette.isDark ? palette.surface : style.background,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(rec.icon, color: accent, size: 20),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -115,10 +119,25 @@ class _RecommendationCardState extends State<RecommendationCard> with SingleTick
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                               decoration:
-                                  BoxDecoration(color: style.background, borderRadius: BorderRadius.circular(20)),
-                              child: Text(
-                                rec.status == PondStatus.critical ? 'Critical' : 'Warning',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: style.color),
+                                  BoxDecoration(
+                                    color: palette.isDark ? palette.surface : style.background,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: palette.isDark ? accent : Colors.transparent),
+                                  ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(style.icon, size: 14, color: accent),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    style.shortLabel,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: palette.isDark ? palette.textPrimary : accent,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -132,7 +151,7 @@ class _RecommendationCardState extends State<RecommendationCard> with SingleTick
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.check_circle, size: 16, color: style.color),
+                                Icon(Icons.check_circle, size: 16, color: accent),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(

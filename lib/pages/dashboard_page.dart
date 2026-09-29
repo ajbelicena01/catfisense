@@ -8,12 +8,13 @@ import '../services/notification_service.dart';
 import '../services/sensor_repository.dart';
 import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
+import '../utils/sensor_history.dart';
 import '../utils/slide_page_route.dart';
 import '../widgets/alert_consent_dialog.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/app_header.dart';
 import '../widgets/app_bottom_nav.dart';
-import '../widgets/battery_status_row.dart';
+import '../widgets/phi_history_chart.dart';
 import '../widgets/sensor_reading_card.dart';
 import '../widgets/status_banner.dart';
 import 'history_page.dart';
@@ -28,6 +29,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final _sensorRepository = SensorRepository();
+  late final Stream<List<SensorHistoryPoint>> _phiHistoryStream;
 
   SensorReading? _latest;
   StreamSubscription<SensorReading?>? _readingSubscription;
@@ -40,6 +42,10 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    _phiHistoryStream = watchHistory(
+      HistoryRange.daily,
+      repository: _sensorRepository,
+    );
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _maybeShowAlertConsent(),
     );
@@ -152,6 +158,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         palette: palette,
                         onTap: _openRecommendations,
                         updatedLabel: _formatTime(reading.recordedAt),
+                        phiHistoryStream: _phiHistoryStream,
                         onHistoryTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const HistoryPage(),
@@ -214,6 +221,7 @@ class _Loaded extends StatelessWidget {
     required this.palette,
     required this.onTap,
     required this.updatedLabel,
+    required this.phiHistoryStream,
     required this.onHistoryTap,
   });
 
@@ -221,6 +229,7 @@ class _Loaded extends StatelessWidget {
   final AppPalette palette;
   final VoidCallback onTap;
   final String updatedLabel;
+  final Stream<List<SensorHistoryPoint>> phiHistoryStream;
   final VoidCallback onHistoryTap;
 
   @override
@@ -251,14 +260,14 @@ class _Loaded extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: palette.primary,
+                      color: palette.isDark ? palette.textPrimary : palette.primary,
                     ),
                   ),
                   const SizedBox(width: 4),
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 10,
-                    color: palette.primary,
+                    color: palette.isDark ? palette.textSecondary : palette.primary,
                   ),
                 ],
               ),
@@ -280,8 +289,6 @@ class _Loaded extends StatelessWidget {
           style: TextStyle(fontSize: 13, color: palette.textSecondary),
         ),
         const SizedBox(height: 12),
-        BatteryStatusRow(percent: reading.batteryPercent),
-        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
@@ -290,6 +297,9 @@ class _Loaded extends StatelessWidget {
                 value: reading.ph.toStringAsFixed(1),
                 icon: Icons.science_outlined,
                 status: phStat,
+                description: 'pH shows how acidic or alkaline the pond water is.',
+                pondImpact: 'Large or rapid pH changes can stress fish and affect gill function. pH also changes how toxic ammonia is to fish.',
+                optimalRange: '6.5–8.5 pH',
               ),
             ),
             const SizedBox(width: 12),
@@ -300,6 +310,9 @@ class _Loaded extends StatelessWidget {
                 unit: '°C',
                 icon: Icons.thermostat_outlined,
                 status: tempStat,
+                description: 'Water temperature measures how warm or cool the pond is.',
+                pondImpact: 'Temperature affects fish metabolism, appetite, growth, and oxygen demand. Warmer water also holds less dissolved oxygen.',
+                optimalRange: '25–30 °C',
               ),
             ),
           ],
@@ -313,6 +326,9 @@ class _Loaded extends StatelessWidget {
                 value: reading.dissolvedOxygen.toStringAsFixed(1),
                 icon: Icons.bubble_chart_outlined,
                 status: doStat,
+                description: 'Dissolved oxygen (DO) is the oxygen available in the water for fish to breathe.',
+                pondImpact: 'Low DO can cause stress, poor feeding, gasping at the surface, and fish deaths.',
+                optimalRange: 'At least 5 mg/L',
               ),
             ),
             const SizedBox(width: 12),
@@ -322,9 +338,63 @@ class _Loaded extends StatelessWidget {
                 value: reading.ammonia.toStringAsFixed(2),
                 icon: Icons.warning_amber_outlined,
                 status: ammoniaStat,
+                description: 'Ammonia comes mainly from fish waste and uneaten feed.',
+                pondImpact: 'Ammonia can damage fish gills. Its toxic effect increases with higher pH and temperature.',
+                optimalRange: 'At or below 0.02 mg/L',
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'PHI Trend',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: palette.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Daily pond health index',
+          style: TextStyle(fontSize: 13, color: palette.textSecondary),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: palette.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: palette.isDark ? palette.border : palette.primary),
+          ),
+          child: StreamBuilder<List<SensorHistoryPoint>>(
+            stream: phiHistoryStream,
+            builder: (context, snapshot) {
+              final points = snapshot.data ?? const <SensorHistoryPoint>[];
+              if (!snapshot.hasData) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 42),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (points.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Center(
+                    child: Text(
+                      'No PHI readings recorded today yet.',
+                      style: TextStyle(fontSize: 13, color: palette.textSecondary),
+                    ),
+                  ),
+                );
+              }
+              return PhiHistoryChart(
+                points: points,
+                range: HistoryRange.daily,
+              );
+            },
+          ),
         ),
         const SizedBox(height: 20),
         Divider(height: 1, color: palette.divider),
@@ -332,7 +402,7 @@ class _Loaded extends StatelessWidget {
         GestureDetector(
           onTap: onHistoryTap,
           child: Text(
-            'History',
+            'View all readings',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,

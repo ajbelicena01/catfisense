@@ -49,6 +49,6 @@ class AppPalette {
   Color get border => isDark ? kDarkBorder : const Color(0xFFEAEAEA);
   Color get primary => isDark ? kDarkPrimary : kBrandOrange;
   Color get textPrimary => isDark ? Colors.white : const Color(0xFF1A1A1A);
-  Color get textSecondary => isDark ? const Color(0xFFFDFDFD) : const Color(0xFF9A9A9A);
+  Color get textSecondary => isDark ? const Color(0xFFFDFDFD) : const Color(0xFF595959);
   Color get divider => isDark ? kDarkBorder : const Color(0xFFEAEAEA);
 }

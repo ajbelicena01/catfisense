@@ -5,7 +5,6 @@ import '../utils/sensor_history.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/app_header.dart';
-import '../widgets/phi_history_chart.dart';
 import '../widgets/sensor_history_chart.dart';
 import '../widgets/time_range_selector.dart';
 
@@ -88,40 +87,59 @@ class _HistoryPageState extends State<HistoryPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _ChartCard(
-                          child: Column(
-                            children: [
-                              selector,
-                              const SizedBox(height: 20),
-                              _ChartBody(
-                                hasData: snapshot.hasData,
-                                isEmpty: points.isEmpty,
-                                palette: palette,
-                                child: SensorHistoryChart(points: points, range: _range),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
                         Text(
-                          'Overall PHI Readings',
+                          'Water Parameter History',
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: palette.textPrimary),
                         ),
                         const SizedBox(height: 16),
                         _ChartCard(
-                          child: Column(
-                            children: [
-                              selector,
-                              const SizedBox(height: 20),
-                              _ChartBody(
-                                hasData: snapshot.hasData,
-                                isEmpty: points.isEmpty,
-                                palette: palette,
-                                child: PhiHistoryChart(points: points, range: _range),
-                              ),
-                            ],
-                          ),
+                          child: selector,
                         ),
+                        const SizedBox(height: 20),
+                        if (!snapshot.hasData)
+                          _ChartCard(
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 48),
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+                          )
+                        else if (points.isEmpty)
+                          _ChartCard(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 36),
+                              child: Center(
+                                child: Text(
+                                  'No readings recorded in this range yet.',
+                                  style: TextStyle(fontSize: 13, color: palette.textSecondary),
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          for (final metric in SensorMetric.values) ...[
+                            _ChartCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    metric.title,
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
+                                      color: metric.color,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SensorHistoryChart(
+                                    points: points,
+                                    range: _range,
+                                    metric: metric,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                       ],
                     ),
                   );
@@ -132,37 +150,6 @@ class _HistoryPageState extends State<HistoryPage> {
         ),
       ),
     );
-  }
-}
-
-class _ChartBody extends StatelessWidget {
-  const _ChartBody({required this.hasData, required this.isEmpty, required this.palette, required this.child});
-
-  final bool hasData;
-  final bool isEmpty;
-  final AppPalette palette;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!hasData) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 60),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 60),
-        child: Center(
-          child: Text(
-            'No readings recorded in this range yet.',
-            style: TextStyle(fontSize: 13, color: palette.textSecondary),
-          ),
-        ),
-      );
-    }
-    return child;
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
 
 /// The pond-health banner. Driven entirely by [status] so the dashboard can
@@ -32,23 +33,38 @@ class _StatusBannerState extends State<StatusBanner> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
     final style = styleFor(widget.status);
+    final accent = statusAccent(widget.status, darkMode: palette.isDark);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeOut,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
       decoration: BoxDecoration(
-        color: style.background,
+        color: palette.isDark ? palette.surface : style.background,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: style.color, width: 1.2),
+        border: Border.all(color: accent, width: 1.2),
       ),
       child: Column(
         children: [
-          AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 400),
-            style: TextStyle(color: style.color, fontSize: 16, fontWeight: FontWeight.w700),
-            child: Text(style.label),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(style.icon, color: accent, size: 22),
+              const SizedBox(width: 8),
+              Flexible(
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 400),
+                  style: TextStyle(
+                    color: palette.isDark ? palette.textPrimary : accent,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  child: Text(style.label, textAlign: TextAlign.center),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           ScaleTransition(
@@ -58,7 +74,7 @@ class _StatusBannerState extends State<StatusBanner> with SingleTickerProviderSt
               duration: const Duration(milliseconds: 400),
               width: 14,
               height: 14,
-              decoration: BoxDecoration(color: style.dotColor, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
             ),
           ),
         ],

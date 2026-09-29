@@ -20,7 +20,24 @@ class PhiHistoryChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
     final axisColor = palette.textSecondary;
-    final labelStep = (points.length / 6).ceil().clamp(1, points.length);
+    final chartPoints = points.where((point) =>
+      point.ph >= 0 && point.ph <= 14 &&
+      point.temperature >= 0 && point.temperature <= 40 &&
+      point.ammonia >= 0 && point.ammonia <= 2 &&
+      point.dissolvedOxygen >= 0 && point.dissolvedOxygen <= 15
+    ).toList();
+    if (chartPoints.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: Text(
+            'No readings within the displayed parameter ranges.',
+            style: TextStyle(fontSize: 13, color: palette.textSecondary),
+          ),
+        ),
+      );
+    }
+    final labelStep = (chartPoints.length / 6).ceil().clamp(1, chartPoints.length);
 
     return Column(
       children: [
@@ -39,10 +56,6 @@ class PhiHistoryChart extends StatelessWidget {
                 topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
-                  axisNameWidget: Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text('Reading', style: TextStyle(fontSize: 12, color: axisColor)),
-                  ),
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 56,
@@ -64,11 +77,11 @@ class PhiHistoryChart extends StatelessWidget {
                     interval: labelStep.toDouble(),
                     getTitlesWidget: (value, meta) {
                       final i = value.toInt();
-                      if (i < 0 || i >= points.length || i % labelStep != 0) return const SizedBox.shrink();
+                      if (i < 0 || i >= chartPoints.length || i % labelStep != 0) return const SizedBox.shrink();
                       return Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
-                          points[i].label(range),
+                          chartPoints[i].label(range),
                           style: TextStyle(fontSize: 10, color: axisColor),
                         ),
                       );
@@ -79,7 +92,7 @@ class PhiHistoryChart extends StatelessWidget {
               lineTouchData: const LineTouchData(enabled: false),
               lineBarsData: [
                 LineChartBarData(
-                  spots: [for (var i = 0; i < points.length; i++) FlSpot(i.toDouble(), points[i].phi)],
+                  spots: [for (var i = 0; i < chartPoints.length; i++) FlSpot(i.toDouble(), chartPoints[i].phi)],
                   isCurved: true,
                   color: phiColor,
                   barWidth: 2.5,
@@ -90,12 +103,19 @@ class PhiHistoryChart extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.circle, color: phiColor, size: 10),
-            SizedBox(width: 6),
-            Text('Overall PHI', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: phiColor)),
+            const Icon(Icons.circle, color: phiColor, size: 10),
+            const SizedBox(width: 6),
+            Text(
+              'Overall PHI',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: palette.isDark ? palette.textSecondary : phiColor,
+              ),
+            ),
           ],
         ),
       ],

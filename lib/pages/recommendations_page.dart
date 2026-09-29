@@ -126,6 +126,7 @@ class _RecommendationsSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
     final style = styleFor(status);
+    final accent = statusAccent(status, darkMode: palette.isDark);
     final plural = issueCount == 1 ? '' : 's';
     final (title, subtitle, icon) = switch (status) {
       PondStatus.healthy => (
@@ -149,29 +150,39 @@ class _RecommendationsSummary extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: style.background,
+        color: palette.isDark ? palette.surface : style.background,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: style.color, width: 1.2),
+        border: Border.all(color: accent, width: 1.2),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-            child: Icon(icon, color: style.color, size: 26),
+            decoration: BoxDecoration(
+              color: palette.isDark ? palette.background : Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: accent, size: 26),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: style.color)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: palette.isDark ? palette.textPrimary : accent,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: TextStyle(
                     fontSize: 13,
-                    color: palette.isDark ? const Color(0xFF3A3A3A) : const Color(0xFF4A4A4A),
+                    color: palette.isDark ? palette.textSecondary : const Color(0xFF4A4A4A),
                     height: 1.3,
                   ),
                 ),
