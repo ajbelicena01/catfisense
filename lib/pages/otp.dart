@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/section_heading.dart';
@@ -73,7 +74,7 @@ class _OtpPageState extends State<OtpPage> {
     final code = _controllers.map((c) => c.text).join();
     if (code.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter the 6-digit code')),
+        SnackBar(content: Text(context.l10n.otpEnterCode)),
       );
       return;
     }
@@ -107,10 +108,10 @@ class _OtpPageState extends State<OtpPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 180),
-                  const SectionHeading(text: 'OTP', centered: true),
+                  SectionHeading(text: context.l10n.otpTitle, centered: true),
                   const SizedBox(height: 16),
                   Text(
-                    widget.subtitle ?? "We'll Send You An SMS For The OTP. Enter The Code Below.",
+                    widget.subtitle ?? context.l10n.otpSubtitle,
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 14, color: Color(0xFF6B6B6B), height: 1.4),
                   ),
@@ -146,12 +147,12 @@ class _OtpPageState extends State<OtpPage> {
                     }),
                   ),
                   const SizedBox(height: 28),
-                  FilledActionButton(label: 'Confirm', onPressed: _confirm),
+                  FilledActionButton(label: context.l10n.otpConfirm, onPressed: _confirm),
                   const SizedBox(height: 20),
                   _secondsLeft > 0
                       ? Text.rich(
                           TextSpan(
-                            text: 'Resend OTP in ',
+                            text: context.l10n.otpResendIn,
                             style: const TextStyle(color: Color(0xFF6B6B6B), fontSize: 13),
                             children: [
                               TextSpan(
@@ -163,9 +164,9 @@ class _OtpPageState extends State<OtpPage> {
                         )
                       : GestureDetector(
                           onTap: _startCountdown,
-                          child: const Text(
-                            'Resend OTP',
-                            style: TextStyle(color: kBrandOrange, fontWeight: FontWeight.w700, fontSize: 13),
+                          child: Text(
+                            context.l10n.otpResend,
+                            style: const TextStyle(color: kBrandOrange, fontWeight: FontWeight.w700, fontSize: 13),
                           ),
                         ),
                 ],

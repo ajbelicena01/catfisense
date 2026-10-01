@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/sensor_history.dart';
 
@@ -11,14 +12,12 @@ const doColor = Color(0xFFFFB300);
 const phiColor = Color(0xFF03A9F4);
 
 enum SensorMetric {
-  ph('pH', 'pH', phColor, 1, 0, 14, 2),
-  temperature('Temperature (°C)', 'Temperature (°C)', temperatureColor, 1, 0, 40, 10),
-  ammonia('Ammonia (NH₃)', 'Ammonia (mg/L)', ammoniaColor, 2, 0, 2, 0.5),
-  dissolvedOxygen('Dissolved Oxygen (DO)', 'Dissolved Oxygen (mg/L)', doColor, 1, 0, 15, 5);
+  ph(phColor, 1, 0, 14, 2),
+  temperature(temperatureColor, 1, 0, 40, 10),
+  ammonia(ammoniaColor, 2, 0, 2, 0.5),
+  dissolvedOxygen(doColor, 1, 0, 15, 5);
 
   const SensorMetric(
-    this.title,
-    this.axisTitle,
     this.color,
     this.decimals,
     this.minY,
@@ -26,8 +25,19 @@ enum SensorMetric {
     this.interval,
   );
 
-  final String title;
-  final String axisTitle;
+  String title(AppLocalizations l10n) => switch (this) {
+    SensorMetric.ph => 'pH',
+    SensorMetric.temperature => l10n.chartTemperature,
+    SensorMetric.ammonia => l10n.chartAmmoniaTitle,
+    SensorMetric.dissolvedOxygen => l10n.chartOxygenTitle,
+  };
+
+  String axisTitle(AppLocalizations l10n) => switch (this) {
+    SensorMetric.ph => 'pH',
+    SensorMetric.temperature => l10n.chartTemperature,
+    SensorMetric.ammonia => l10n.chartAmmoniaAxis,
+    SensorMetric.dissolvedOxygen => l10n.chartOxygenAxis,
+  };
   final Color color;
   final int decimals;
   final double minY;
@@ -55,11 +65,33 @@ class SensorHistoryChart extends StatelessWidget {
     required this.points,
     required this.range,
     required this.metric,
+    this.markers = const [],
   });
 
   final List<SensorHistoryPoint> points;
   final HistoryRange range;
   final SensorMetric metric;
+
+  /// Times drawn as dashed vertical lines (logbook entries).
+  final List<DateTime> markers;
+
+  /// The x position of [time]: the first plotted reading at or after it, or
+  /// null when it falls outside the plotted readings. The x axis counts
+  /// readings rather than time, so a marker sits on the reading it precedes.
+  static double? _markerX(List<SensorHistoryPoint> chartPoints, DateTime time) {
+    if (time.isBefore(chartPoints.first.time) || time.isAfter(chartPoints.last.time)) return null;
+    var low = 0;
+    var high = chartPoints.length - 1;
+    while (low < high) {
+      final mid = (low + high) ~/ 2;
+      if (chartPoints[mid].time.isBefore(time)) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low.toDouble();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +103,7 @@ class SensorHistoryChart extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: Center(
           child: Text(
-            'No readings within the displayed range.',
+            context.l10n.chartNoReadingsInRange,
             style: TextStyle(fontSize: 13, color: palette.textSecondary),
           ),
         ),
@@ -105,7 +137,7 @@ class SensorHistoryChart extends StatelessWidget {
               // Extra vertical padding here was causing descenders (p, y, g)
               // to be clipped after the left title was rotated.
               axisNameWidget: Text(
-                metric.axisTitle,
+                metric.axisTitle(context.l10n),
                 style: TextStyle(fontSize: 11, color: axisColor, height: 1),
               ),
               sideTitles: SideTitles(
@@ -119,7 +151,7 @@ class SensorHistoryChart extends StatelessWidget {
               ),
             ),
             bottomTitles: AxisTitles(
-              axisNameWidget: Text('Time', style: TextStyle(fontSize: 11, color: axisColor)),
+              axisNameWidget: Text(context.l10n.chartTime, style: TextStyle(fontSize: 11, color: axisColor)),
               sideTitles: SideTitles(
                 showTitles: true,
                 interval: labelStep.toDouble(),
@@ -131,7 +163,7 @@ class SensorHistoryChart extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
-                      chartPoints[index].label(range),
+                      chartPoints[index].label(range, context.l10n.localeName),
                       style: TextStyle(fontSize: 10, color: axisColor),
                     ),
                   );
@@ -140,6 +172,18 @@ class SensorHistoryChart extends StatelessWidget {
             ),
           ),
           lineTouchData: const LineTouchData(enabled: false),
+          extraLinesData: ExtraLinesData(
+            verticalLines: [
+              for (final marker in markers)
+                if (_markerX(chartPoints, marker) case final x?)
+                  VerticalLine(
+                    x: x,
+                    color: axisColor.withValues(alpha: 0.7),
+                    strokeWidth: 1.2,
+                    dashArray: const [4, 4],
+                  ),
+            ],
+          ),
           lineBarsData: [
             LineChartBarData(
               spots: [

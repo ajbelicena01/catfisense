@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import 'animated_illustration.dart';
 
@@ -99,16 +100,16 @@ class _OnboardingScaffoldState extends State<OnboardingScaffold>
                 children: [
                   TextButton(
                     onPressed: widget.onSkip,
-                    child: const Text(
-                      'Skip',
-                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                    child: Text(
+                      context.l10n.onboardingSkip,
+                      style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
                     ),
                   ),
                   _DotIndicator(pageIndex: widget.pageIndex, totalPages: widget.totalPages),
                   TextButton(
                     onPressed: widget.onNext,
                     child: Text(
-                      widget.isLastPage ? 'Finish' : 'Next',
+                      widget.isLastPage ? context.l10n.onboardingFinish : context.l10n.onboardingNext,
                       style: const TextStyle(color: kBrandOrange, fontWeight: FontWeight.w700),
                     ),
                   ),

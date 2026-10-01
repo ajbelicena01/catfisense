@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/validators.dart';
@@ -65,7 +66,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       Navigator.of(context).pop(); // back to Settings
     } else {
       Navigator.of(context).pop(); // OtpPage, back to the form to retry
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.error!)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.error!.message(context.l10n))));
     }
   }
 
@@ -110,7 +111,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   controller: _newPasswordController,
                   hintText: 'enter your new password',
                   obscureText: true,
-                  validator: validatePassword,
+                  validator: (value) => validatePassword(context.l10n, value),
                 ),
                 const SizedBox(height: 20),
                 ThemedLabeledTextField(

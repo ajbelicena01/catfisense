@@ -1,0 +1,932 @@
+{
+  "@@locale": "en",
+  "appName": "CatfiSense",
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{count, plural, =1{1 min ago} other{{count} min ago}}",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHoursMinutes": "{hours}h {minutes}m",
+  "@durationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutes": "{minutes}m",
+  "@durationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationUnderMinute": "under 1m",
+  "freshnessUpdated": "Updated {time}",
+  "@freshnessUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "freshnessSensorOfflineTitle": "Sensor offline",
+  "freshnessSensorOfflineBody": "The last reading was {time}. Check the sensor device's power and internet connection.",
+  "@freshnessSensorOfflineBody": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "freshnessNoInternetTitle": "You're offline",
+  "freshnessNoInternetBody": "Showing the last readings received. They will update when you're back online.",
+  "statusGood": "Good",
+  "statusWarning": "Warning",
+  "statusCritical": "Critical",
+  "issueLowPh": "Low pH",
+  "issueHighPh": "High pH",
+  "issueLowTemperature": "Low temperature",
+  "issueHighTemperature": "High temperature",
+  "issueLowOxygen": "Low dissolved oxygen",
+  "issueHighAmmonia": "High ammonia",
+  "alertsNav": "Alerts",
+  "alertsTitle": "Alert History",
+  "alertsLink": "Alert history",
+  "alertsLoadError": "Could not load the readings. Check your connection and try again.",
+  "alertsNoReadings": "No readings were recorded in this period.",
+  "alertsNoneTitle": "No alerts in this period",
+  "alertsNoneBody": "The pond stayed within the healthy range.",
+  "alertsCount": "{count, plural, =1{1 alert} other{{count} alerts}}",
+  "@alertsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alertsCriticalCount": "{count} critical",
+  "@alertsCriticalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alertsTotalTime": "{duration} in total",
+  "@alertsTotalTime": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "alertOngoing": "Ongoing",
+  "alertStartedAt": "Started {time}",
+  "@alertStartedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "alertLasted": "lasted {duration}",
+  "@alertLasted": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "alertLowest": "lowest {value}",
+  "@alertLowest": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "alertHighest": "highest {value}",
+  "@alertHighest": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonCancel": "Cancel",
+  "loadError": "Could not load this. Check your connection and try again.",
+  "dayToday": "Today",
+  "dayYesterday": "Yesterday",
+  "logTypeFeeding": "Fed the fish",
+  "logTypeWaterChange": "Changed water",
+  "logTypeAerator": "Turned on aerator",
+  "logTypeTreatment": "Treated the water",
+  "logTypeOther": "Other",
+  "logbookNav": "Logbook",
+  "logbookTitle": "Pond Logbook",
+  "logbookSubtitle": "Record what was done at the pond. Entries also show up on the History charts.",
+  "logbookAdd": "Log activity",
+  "logbookEmptyTitle": "No entries yet",
+  "logbookEmptyBody": "Tap “Log activity” after feeding the fish, changing water, or treating the pond.",
+  "logbookNoteLabel": "Note (optional)",
+  "logbookNoteHint": "e.g. 2 kg of feed",
+  "logbookWhen": "When",
+  "logbookNow": "Now",
+  "logbookTodayAt": "Today, {time}",
+  "@logbookTodayAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "logbookSave": "SAVE",
+  "logbookSaved": "Entry saved",
+  "logbookSaveError": "Could not save the entry. Check your connection and try again.",
+  "logbookDelete": "Delete",
+  "logbookDeleteConfirmTitle": "Delete this entry?",
+  "logbookDeleteConfirmBody": "This can't be undone.",
+  "logbookDeleted": "Entry deleted",
+  "logbookDeleteError": "Could not delete the entry. Check your connection and try again.",
+  "logbookByYou": "by you",
+  "logbookByOwner": "by the owner",
+  "logbookByCaretaker": "by the caretaker",
+  "logbookChartLegend": "Dashed lines mark logbook entries.",
+  "roleOwner": "Owner",
+  "roleCaretaker": "Caretaker",
+  "paramTemperature": "Temperature",
+  "paramOxygen": "Dissolved oxygen",
+  "paramAmmonia": "Ammonia",
+  "reportTitle": "CatfiSense Pond Report",
+  "reportPeriod": "Period: {start} to {end}",
+  "@reportPeriod": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "reportGenerated": "Generated {time}",
+  "@reportGenerated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "reportSummary": "Summary",
+  "reportReadingsCount": "{count, plural, =1{1 reading} other{{count} readings}}",
+  "@reportReadingsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportGoodShare": "{percent}% of readings were Good",
+  "@reportGoodShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "reportParameter": "Parameter",
+  "reportLowest": "Lowest",
+  "reportAverage": "Average",
+  "reportHighest": "Highest",
+  "reportHealthyRange": "Healthy range",
+  "reportGoodReadings": "Good readings",
+  "reportAlerts": "Alerts",
+  "reportStarted": "Started",
+  "reportDuration": "Duration",
+  "reportStatus": "Status",
+  "reportDetails": "Details",
+  "reportNoLogs": "No logbook entries in this period.",
+  "reportTime": "Time",
+  "reportActivity": "Activity",
+  "reportNote": "Note",
+  "reportBy": "By",
+  "reportDaily": "Daily averages",
+  "reportDate": "Date",
+  "reportReadings": "Readings",
+  "reportWorst": "Worst",
+  "reportPage": "Page {page} of {total}",
+  "@reportPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "exportTooltip": "Export report",
+  "exportTitle": "Export report",
+  "exportPeriod": "For the period shown: {period}",
+  "@exportPeriod": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPdf": "PDF report",
+  "exportPdfHint": "Summary, alerts, logbook, and daily averages",
+  "exportCsv": "Spreadsheet (CSV)",
+  "exportCsvHint": "Every reading, for Excel or Google Sheets",
+  "exportWorking": "Preparing the report…",
+  "exportNoData": "There are no readings in this period to export.",
+  "exportError": "Could not create the report. Please try again.",
+  "welcomeLogin": "LOGIN",
+  "welcomeSignup": "SIGN UP",
+  "loginTitle": "Log in",
+  "fieldPhone": "Phone no",
+  "fieldPassword": "Password",
+  "fieldPasswordHint": "enter your password",
+  "loginPasswordRequired": "Enter your password",
+  "loginRememberMe": "Remember Me",
+  "loginForgotPassword": "Forgot Password?",
+  "loginButton": "LOGIN",
+  "loginNoAccount": "Don't have an Account? ",
+  "loginSignupLink": "Sign up",
+  "signupTitle": "Sign up",
+  "signupConfirmPassword": "Confirm Password",
+  "signupConfirmHint": "Confirm your password",
+  "signupPasswordsMismatch": "Passwords do not match",
+  "signupButton": "CREATE ACCOUNT",
+  "signupHaveAccount": "Already have an Account? ",
+  "signupLoginLink": "Login",
+  "otpTitle": "OTP",
+  "otpSubtitle": "We'll send you an SMS with the OTP. Enter the code below.",
+  "otpEnterCode": "Enter the 6-digit code",
+  "otpConfirm": "Confirm",
+  "otpResendIn": "Resend OTP in ",
+  "otpResend": "Resend OTP",
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingFinish": "Finish",
+  "onboarding1Headline": "Your pond's health\nis in your hands.",
+  "onboarding1Body": "Monitor your catfish pond anytime, anywhere.",
+  "onboarding2Headline": "Track what matters\nin real time.",
+  "onboarding2Body": "View pH, temperature, ammonia, and dissolved oxygen readings at a glance.",
+  "onboarding3Headline": "Know your pond's\ncondition instantly.",
+  "onboarding3Body": "CatfiSense analyzes readings and shows whether your pond is Healthy, Warning, or Critical.",
+  "onboarding4Headline": "Get alerts when\naction is needed.",
+  "onboarding4Body": "Receive mobile and SMS alerts with expert-guided recommendations.",
+  "pondCodeTitle": "Link your pond",
+  "pondCodeBody": "Enter the pond code from your CatfiSense device or from your admin to see your pond readings.",
+  "pondCodeField": "Pond code",
+  "pondCodeButton": "LINK POND",
+  "pondCodeWrongAccount": "Wrong account? ",
+  "pondCodeLogout": "Log out",
+  "pondCodeJoinedOwner": "Pond linked. You joined as the owner.",
+  "pondCodeJoinedCaretaker": "Pond linked. You joined as the caretaker.",
+  "pondCodeInvalid": "Enter the 8-character pond code",
+  "pondJoinNotFound": "That pond code was not found. Check it and try again.",
+  "pondJoinNetwork": "Could not link the pond. Check your connection and try again.",
+  "pondJoinFull": "This pond already has an owner and a caretaker. Ask the pond owner for help.",
+  "validatePhone": "Enter a valid PH mobile number (09XXXXXXXXX)",
+  "validatePasswordLength": "At least 8 characters",
+  "validatePasswordCapital": "Include at least one capital letter",
+  "validatePasswordSymbol": "Include at least one symbol",
+  "authPhoneTaken": "This phone number is already registered.",
+  "authWeakPassword": "Password must be at least 6 characters.",
+  "authWrongCredentials": "Incorrect phone number or password.",
+  "authRecentLogin": "Please re-enter your current password to continue.",
+  "authNotSignedIn": "You need to be logged in to do this.",
+  "authSamePhone": "That is already your registered number.",
+  "authGeneric": "Something went wrong. Please try again.",
+  "logoutTitle": "Log out?",
+  "logoutBody": "You'll need to log in again to access your pond data.",
+  "logoutConfirm": "Log out",
+  "commonChecking": "Checking…",
+  "commonLoading": "Loading…",
+  "settingsTitle": "Settings",
+  "settingsAccount": "Account",
+  "settingsLoggedInAs": "Logged in as",
+  "settingsUnknownNumber": "Unknown number",
+  "settingsRole": "Pond role",
+  "settingsRoleOwner": "Pond owner",
+  "settingsRoleOwnerHint": "You can invite or remove the caretaker",
+  "settingsRoleCaretakerHint": "You can view this pond's readings",
+  "settingsRoleNone": "Not linked to a pond",
+  "settingsAppearance": "Appearance",
+  "settingsDarkMode": "Dark Mode",
+  "settingsDarkModeHint": "Easier on the eyes at night",
+  "settingsTextSize": "Text size",
+  "textSizeSmall": "Small",
+  "textSizeDefault": "Default",
+  "textSizeLarge": "Large",
+  "textSizeExtraLarge": "Extra large",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "Phone default",
+  "settingsNotifications": "Notifications",
+  "settingsPush": "Push Notifications",
+  "settingsPushHint": "In-app alerts when a reading turns risky",
+  "settingsSms": "SMS Alerts",
+  "settingsSmsHint": "Text messages straight from the pond device",
+  "settingsAbout": "About",
+  "settingsAboutApp": "About CatfiSense",
+  "settingsAboutAppHint": "What the app does and how it works",
+  "membersTitle": "Pond members",
+  "membersLoadError": "Could not load pond members",
+  "membersNoCaretaker": "No caretaker yet",
+  "membersInviteHint": "To invite one, send them the pond code below. They sign up in the app and enter it.",
+  "membersNoPhone": "Phone number not available",
+  "membersRemove": "Remove",
+  "membersNoCode": "No code set",
+  "membersCopyCode": "Copy pond code",
+  "membersCodeCopied": "Pond code copied",
+  "membersChangeCode": "Change pond code",
+  "membersChangeCodeHint": "The old code stops working. Members stay in.",
+  "membersChangeCodeTitle": "Change pond code?",
+  "membersChangeCodeBody": "{code} will stop working. Anyone already in the pond stays in.",
+  "@membersChangeCodeBody": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "membersChangeCodeBodyUnknown": "The current code will stop working. Anyone already in the pond stays in.",
+  "membersChangeCodeConfirm": "Change code",
+  "membersChangeCodeError": "Could not change the code. Check your connection and try again.",
+  "membersNewCode": "New pond code: {code}",
+  "@membersNewCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "membersTheCaretaker": "The caretaker",
+  "membersRemoveTitle": "Remove caretaker?",
+  "membersRemoveBody": "{who} will lose access to this pond right away.\n\nThey could still rejoin with the current pond code, so change the code too if you don't want them back.",
+  "@membersRemoveBody": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "membersRemoveAndChange": "Remove & change code",
+  "membersRemoved": "Caretaker removed",
+  "membersRemoveError": "Could not remove the caretaker. Check your connection and try again.",
+  "commonBack": "Back",
+  "commonClose": "CLOSE",
+  "statusBannerGood": "Pond health is good.",
+  "statusBannerWarning": "Pond health warning.",
+  "statusBannerCritical": "Pond health is critical.",
+  "phiHealthy": "Healthy",
+  "phiOverall": "Overall PHI",
+  "batteryLabel": "Device Battery",
+  "cardWhatItMeasures": "What it measures",
+  "cardWhyItMatters": "Why it matters",
+  "cardOptimalRange": "Optimal range",
+  "cardPhLabel": "pH Level",
+  "cardPhDescription": "pH shows how acidic or alkaline the pond water is.",
+  "cardPhImpact": "Large or rapid pH changes can stress fish and affect gill function. pH also changes how toxic ammonia is to fish.",
+  "cardTemperatureDescription": "Water temperature measures how warm or cool the pond is.",
+  "cardTemperatureImpact": "Temperature affects fish metabolism, appetite, growth, and oxygen demand. Warmer water also holds less dissolved oxygen.",
+  "cardOxygenDescription": "Dissolved oxygen (DO) is the oxygen available in the water for fish to breathe.",
+  "cardOxygenImpact": "Low DO can cause stress, poor feeding, gasping at the surface, and fish deaths.",
+  "cardAmmoniaDescription": "Ammonia comes mainly from fish waste and uneaten feed.",
+  "cardAmmoniaImpact": "Ammonia can damage fish gills. Its toxic effect increases with higher pH and temperature.",
+  "chartTime": "Time",
+  "chartTemperature": "Temperature (°C)",
+  "chartAmmoniaTitle": "Ammonia (NH₃)",
+  "chartAmmoniaAxis": "Ammonia (mg/L)",
+  "chartOxygenTitle": "Dissolved Oxygen (DO)",
+  "chartOxygenAxis": "Dissolved Oxygen (mg/L)",
+  "chartNoReadingsInRange": "No readings within the displayed range.",
+  "chartNoReadingsInParameterRanges": "No readings within the displayed parameter ranges.",
+  "rangeDaily": "Daily",
+  "rangeWeekly": "Weekly",
+  "rangeMonthly": "Monthly",
+  "rangeCustom": "Custom",
+  "historyTitle": "Water Parameter History",
+  "historyNoReadings": "No readings recorded in this range yet.",
+  "navHome": "Home",
+  "navHistory": "History",
+  "navInsights": "Insights",
+  "refreshNoReadings": "No sensor readings are available yet.",
+  "refreshDone": "Latest sensor reading refreshed.",
+  "refreshError": "Could not refresh sensor readings.",
+  "monitoringLatest": "Latest: pH {ph} • {temperature}°C • DO {oxygen}",
+  "@monitoringLatest": {
+    "placeholders": {
+      "ph": {
+        "type": "String"
+      },
+      "temperature": {
+        "type": "String"
+      },
+      "oxygen": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringWaiting": "Waiting for the latest pond sensor reading.",
+  "monitoringActive": "Monitoring the latest pond sensor reading.",
+  "dashboardNoReadingsTitle": "No readings yet",
+  "dashboardNoReadingsBody": "Waiting for the pond sensor to send its first reading.\nTap refresh to check again.",
+  "dashboardViewRecommendations": "View recommendations",
+  "dashboardSeeWhatToDo": "See what to do",
+  "dashboardSensorReadings": "Sensor Readings",
+  "dashboardPhiTrend": "PHI Trend",
+  "dashboardPhiSubtitle": "Daily pond health index",
+  "dashboardPhiEmpty": "No PHI readings recorded today yet.",
+  "dashboardViewAllReadings": "View all readings",
+  "aboutTagline": "Smart water-quality monitoring for catfish ponds.",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutWhatItDoes": "What it does",
+  "aboutWhatItDoesBody": "CatfiSense watches your pond water around the clock. A sensor device in the pond measures the water every few seconds, and this app shows the readings live, keeps their history, and tells you what to do when something drifts out of the safe range.",
+  "aboutWhatItMonitors": "What it monitors",
+  "aboutPhBody": "How acidic or alkaline the water is. Big swings stress the fish.",
+  "aboutTemperatureBody": "Affects how much catfish eat, how fast they grow, and how much oxygen they need.",
+  "aboutOxygenBody": "The oxygen available to the fish. Low oxygen is a common cause of sudden fish kills.",
+  "aboutAmmoniaBody": "Builds up from fish waste and leftover feed. High levels harm the gills and slow growth.",
+  "aboutPondStatus": "Pond status",
+  "aboutStatusGood": "All readings are within the healthy range.",
+  "aboutStatusWarning": "A reading is drifting out of range. Check the pond soon.",
+  "aboutStatusCritical": "A reading is dangerous for the fish. Act now. You also get a push and SMS alert.",
+  "aboutHowItWorks": "How it works",
+  "aboutStepMeasure": "1. Measure",
+  "aboutStepMeasureBody": "The solar-powered sensor device in the pond reads the water every few seconds.",
+  "aboutStepSend": "2. Send",
+  "aboutStepSendBody": "Each reading is sent over the internet to the CatfiSense cloud.",
+  "aboutStepAlert": "3. Alert",
+  "aboutStepAlertBody": "The app shows live readings, history and recommendations, and warns you by push notification and SMS when the pond needs attention.",
+  "recWhatToDo": "What you should do",
+  "recSortedByUrgency": "Sorted by urgency — handle critical items first.",
+  "recNoActionTitle": "No action needed",
+  "recNoActionBody": "All sensor readings are within the healthy range.",
+  "recWarningTitle": "{count, plural, =1{1 parameter needs attention} other{{count} parameters need attention}}",
+  "@recWarningTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recWarningBody": "Take the steps below soon to keep the pond healthy.",
+  "recCriticalTitle": "{count, plural, =1{1 parameter critical} other{{count} parameters critical}}",
+  "@recCriticalTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recCriticalBody": "Act now — fish health may be at risk.",
+  "recAllClearTitle": "Pond conditions look great",
+  "recAllClearBody": "No corrective action needed right now. Keep up the good care!",
+  "recTipsTitle": "General Pond Care Tips",
+  "recPhLowCritical1": "Apply agricultural lime immediately to raise pH and stop feeding until levels recover.",
+  "recPhLowCritical2": "Increase water exchange to dilute acidity.",
+  "recRetestPh": "Re-test pH after 2-3 hours, then again the next morning.",
+  "recPhLowWarning1": "Add agricultural lime in small doses and recheck after a few hours.",
+  "recPhLowWarning2": "Avoid adding more feed than the fish can finish in 15-20 minutes.",
+  "recPhHighCritical1": "Perform a partial water change immediately to bring pH back down.",
+  "recPhHighCritical2": "Hold off on liming, fertilizing, or feeding until pH stabilizes.",
+  "recPhHighWarning1": "Partially replace pond water with fresh water to ease pH back into range.",
+  "recPhHighWarning2": "Avoid liming or fertilizing the pond until the next reading.",
+  "recTempLowCritical1": "Shield the pond from cold wind and avoid handling fish until the water warms up.",
+  "recTempLowCritical2": "Reduce or pause feeding — digestion slows sharply in cold water.",
+  "recTempLowWarning1": "Reduce feeding frequency slightly while the water stays cool.",
+  "recTempLowWarning2": "Watch for sluggish feeding behavior, an early sign of cold stress.",
+  "recTempHighCritical1": "Increase aeration immediately and add cooler water if available.",
+  "recTempHighCritical2": "Stop feeding until temperature drops back into range.",
+  "recTempHighWarning1": "Increase aeration and consider shading part of the pond.",
+  "recTempHighWarning2": "Feed during cooler hours — early morning or late afternoon.",
+  "recDoCritical1": "Run aerators or paddle the surface immediately — fish are at risk of suffocation.",
+  "recDoCritical2": "Stop feeding until oxygen levels recover.",
+  "recDoCritical3": "Check for algae die-off or overcrowding as a likely cause.",
+  "recDoWarning1": "Turn on aeration, especially in the early morning when DO is lowest.",
+  "recDoWarning2": "Reduce feeding slightly to limit oxygen demand from waste breakdown.",
+  "recAmmoniaCritical1": "Perform an immediate partial water change to dilute ammonia.",
+  "recAmmoniaCritical2": "Stop feeding and remove any leftover feed or decaying matter.",
+  "recAmmoniaCritical3": "Re-test after the water change and hold off on restocking until levels drop.",
+  "recAmmoniaWarning1": "Reduce the feeding amount and remove uneaten feed promptly.",
+  "recAmmoniaWarning2": "Check for overfeeding or waste buildup at the pond bottom.",
+  "recTip1": "Test water quality at the same time each day so trends stay comparable.",
+  "recTip2": "Keep a feeding log — overfeeding is the most common cause of ammonia spikes.",
+  "recTip3": "Clean and recalibrate sensors regularly to keep readings trustworthy.",
+  "recTip4": "Aerate before sunrise, when dissolved oxygen naturally dips lowest.",
+  "consentTitle": "Stay on top of your pond",
+  "consentBody": "CatfiSense can alert you the moment a reading turns risky. Choose how you'd like to hear about it — you can change this anytime in Settings.",
+  "consentPush": "Push notifications",
+  "consentSms": "SMS alerts",
+  "consentContinue": "CONTINUE",
+  "notifAlertsChannel": "Pond Alerts",
+  "notifAlertsChannelDescription": "Warnings and critical alerts about pond water quality",
+  "notifMonitoringChannel": "Pond Monitoring",
+  "notifMonitoringChannelDescription": "Ongoing pond-monitoring status",
+  "notifMonitoringTitle": "Pond monitoring active",
+  "notifCriticalTitle": "Pond health is critical",
+  "notifWarningTitle": "Pond health warning",
+  "notifCriticalBody": "One or more readings are critical — check the app and act now.",
+  "notifWarningBody": "A reading has drifted out of the healthy range. Tap to see what to do.",
+  "notifPushFallbackTitle": "Pond alert",
+  "notifPushFallbackBody": "A new pond alert has arrived.",
+  "fieldAdminUsername": "Admin username",
+  "loginAsAdmin": "Admin? Log in with your username",
+  "loginAsFarmer": "Log in with a phone number instead",
+  "validateAdminUsername": "Admin usernames look like admin_yourname",
+  "smsTitle": "SMS alert numbers",
+  "smsHint": "The gateway phone texts every pond alert to these numbers.",
+  "smsNone": "No numbers yet. Nobody will get SMS alerts.",
+  "smsAdd": "Add number",
+  "smsAddTitle": "Add an SMS alert number",
+  "smsAdded": "Number added",
+  "smsRemoveTitle": "Remove this number?",
+  "smsRemoveBody": "{number} will stop getting SMS alerts.",
+  "@smsRemoveBody": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "smsRemoveLastBody": "{number} is the only number left. Nobody will get SMS alerts until you add another.",
+  "@smsRemoveLastBody": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "smsRemoved": "Number removed",
+  "smsSaveError": "Could not save. Check your connection and try again.",
+  "smsStatusSent": "sent",
+  "smsStatusFailed": "failed",
+  "smsStatusRejected": "rejected",
+  "smsStatusExpired": "expired",
+  "smsStatusPending": "waiting",
+  "passwordChangeTitle": "Change password",
+  "passwordCurrent": "Current password",
+  "passwordNew": "New password",
+  "passwordSave": "Save",
+  "passwordChanged": "Password changed",
+  "adminTitle": "CatfiSense Admin",
+  "adminTabHealth": "Health",
+  "adminTabPonds": "Ponds",
+  "adminTabUsers": "Users",
+  "adminTabThresholds": "Ranges",
+  "adminTabAudit": "Audit log",
+  "adminNoPonds": "No ponds yet.",
+  "adminSlotEmpty": "Empty",
+  "adminRemoveOwnerTitle": "Remove the owner?",
+  "adminRemoveOwnerBody": "{who} will lose access to this pond right away, and the owner slot becomes free. The next person to enter the pond code becomes the owner, so consider changing the code too.",
+  "@adminRemoveOwnerBody": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "adminMemberRemoved": "Member removed",
+  "adminAdmins": "Admins ({count})",
+  "@adminAdmins": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminFarmers": "Farmer accounts ({count})",
+  "@adminFarmers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminYou": "You",
+  "adminJoined": "signed up {date}",
+  "@adminJoined": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "healthDevice": "Sensor device ({device})",
+  "@healthDevice": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "healthOnline": "Online",
+  "healthOffline": "Offline",
+  "healthNoReadings24h": "No readings in the last 24 hours.",
+  "healthLastReading": "Last reading {time}",
+  "@healthLastReading": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "healthUploadSpeed": "Upload speed",
+  "healthUploadSpeedHint": "Time from the device sending a reading to Firebase storing it (last hour).",
+  "healthLatest": "Latest",
+  "healthAverage": "Average",
+  "healthSlowest": "Slowest",
+  "healthClockNote": "Based on the device's clock, so small values can be off by a fraction of a second.",
+  "healthLast10Min": "Readings, last 10 min",
+  "healthOfExpected": "{count} of {expected}",
+  "@healthOfExpected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "expected": {
+        "type": "int"
+      }
+    }
+  },
+  "healthGaps": "Gaps in the last 24 hours",
+  "healthNoGaps": "No gaps: readings arrived steadily.",
+  "healthNow": "now",
+  "healthGateway": "SMS gateway phone",
+  "healthGatewaySeen": "Last checked in {time}",
+  "@healthGatewaySeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "healthGatewayNever": "Has not checked in yet. Update the gateway app.",
+  "healthNoSms": "No SMS alerts queued yet.",
+  "healthLastSms": "Last SMS alert: {status}, {time}",
+  "@healthLastSms": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "auditSubtitle": "Every change made by admins and pond owners",
+  "auditEmpty": "No changes recorded yet.",
+  "auditBy": "by {name} · {time}",
+  "@auditBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "auditThresholdsChanged": "Changed the pond ranges",
+  "auditThresholdsReset": "Reset the pond ranges to defaults",
+  "auditCaretakerRemoved": "Removed a caretaker",
+  "auditOwnerRemoved": "Removed a pond owner",
+  "auditCodeChanged": "Changed a pond code",
+  "auditRecipientAdded": "Added an SMS alert number",
+  "auditRecipientRemoved": "Removed an SMS alert number",
+  "auditLogEntryDeleted": "Deleted someone's logbook entry",
+  "auditOther": "Other change",
+  "thresholdsTitle": "Pond health ranges",
+  "thresholdsHelp": "Readings inside the Good range show as Good, inside the Warning range as Warning, and anything outside as Critical. Changes apply to every phone right away.",
+  "thresholdsGoodFrom": "Good from",
+  "thresholdsGoodTo": "Good up to",
+  "thresholdsWarningFrom": "Warning from",
+  "thresholdsWarningTo": "Warning up to",
+  "thresholdsNumberError": "Enter a number",
+  "thresholdsOrderError": "The warning range must sit outside the good range, and each lower value must be below the upper one.",
+  "thresholdsSave": "Save ranges",
+  "thresholdsNoChanges": "Nothing changed.",
+  "thresholdsConfirmTitle": "Save these ranges?",
+  "thresholdsConfirmBody": "Every phone will judge readings with the new ranges, and the change is recorded in the audit log.",
+  "thresholdsSaved": "Ranges saved",
+  "thresholdsSaveError": "Could not save the ranges. Check your connection and try again.",
+  "thresholdsReset": "Reset to defaults",
+  "thresholdsResetTitle": "Reset to the default ranges?",
+  "thresholdsResetBody": "The general catfish guidance ranges will be used again on every phone.",
+  "thresholdsDeviceNote": "The app, alerts, advice and reports use these ranges. The sensor device still decides when to send SMS alerts with the ranges in its own firmware.",
+  "commonSave": "Save",
+  "pondNameLabel": "Pond name",
+  "pondNameNotSet": "Not set",
+  "pondRename": "Rename pond",
+  "pondNameRequired": "Enter a pond name",
+  "pondNameTooLong": "Use {max} characters or fewer",
+  "@pondNameTooLong": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "pondNameSaved": "Pond renamed",
+  "pondNameError": "Could not rename the pond. Check your connection and try again.",
+  "auditPondRenamed": "Renamed a pond",
+  "maintenanceNav": "Maintenance",
+  "maintenanceTitle": "Maintenance",
+  "maintenanceSubtitle": "Keep the sensors accurate and the internet and SMS alerts running. You get a reminder before each one is due.",
+  "maintTaskDoElectrolyte": "DO sensor electrolyte",
+  "maintTaskDoElectrolyteHint": "Refill the dissolved oxygen probe's electrolyte so DO readings stay accurate.",
+  "maintTaskPhBuffer": "pH buffer & calibration",
+  "maintTaskPhBufferHint": "Calibrate the pH probe with fresh buffer solutions.",
+  "maintTaskModemLoad": "Wi-Fi modem load",
+  "maintTaskModemLoadHint": "Reload the prepaid modem so the sensor can keep sending readings.",
+  "maintTaskGsmLoad": "SMS gateway load",
+  "maintTaskGsmLoadHint": "Reload the gateway phone's SIM so SMS alerts keep going out.",
+  "maintDoneDoElectrolyte": "Refilled DO electrolyte",
+  "maintDonePhBuffer": "Calibrated pH with new buffer",
+  "maintDoneModemLoad": "Loaded the Wi-Fi modem",
+  "maintDoneGsmLoad": "Loaded the SMS gateway SIM",
+  "maintStatusNotSet": "Not set up",
+  "maintDueIn": "{days, plural, =0{Due today} =1{Due tomorrow} other{Due in {days} days}}",
+  "@maintDueIn": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "maintOverdueBy": "{days, plural, =1{1 day overdue} other{{days} days overdue}}",
+  "@maintOverdueBy": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "maintLastDone": "Last done {date} · every {days} days",
+  "@maintLastDone": {
+    "placeholders": {
+      "date": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "maintNextDue": "Next: {date}",
+  "@maintNextDue": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "maintNotSetBody": "Tap Set up and pick when it was last done to start the reminders.",
+  "maintMarkDone": "Mark done",
+  "maintSetUp": "Set up",
+  "maintEdit": "Edit schedule",
+  "maintDoneOn": "Done on",
+  "maintLastDoneOn": "Last done on",
+  "maintEvery": "Repeat every (days)",
+  "maintEveryInvalid": "Enter 1 to {max} days",
+  "@maintEveryInvalid": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "maintNoteHintLoad": "e.g. promo loaded, valid 30 days",
+  "maintNoteHintProbe": "e.g. used new buffer pack",
+  "maintLogNote": "Also added to the logbook.",
+  "maintSaved": "Saved. Reminders updated.",
+  "maintSaveError": "Could not save. Check your connection and try again.",
+  "maintNotLinked": "Link a pond first to track its maintenance.",
+  "maintBannerTitle": "{count, plural, =1{1 maintenance task needs attention} other{{count} maintenance tasks need attention}}",
+  "@maintBannerTitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "maintBannerBody": "{tasks}. Tap to open Maintenance.",
+  "@maintBannerBody": {
+    "placeholders": {
+      "tasks": {"type": "String"}
+    }
+  },
+  "notifMaintChannel": "Maintenance reminders",
+  "notifMaintChannelDescription": "Reminders to refill, calibrate and reload before they run out.",
+  "notifMaintSoonTitle": "Maintenance due soon",
+  "notifMaintSoonBody": "{task} is due on {date}.",
+  "@notifMaintSoonBody": {
+    "placeholders": {
+      "task": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "notifMaintDueTitle": "Maintenance due today",
+  "notifMaintDueBody": "{task} is due today. Mark it done in CatfiSense when finished.",
+  "@notifMaintDueBody": {
+    "placeholders": {
+      "task": {"type": "String"}
+    }
+  },
+  "notifMaintOverdueTitle": "Maintenance overdue",
+  "notifMaintOverdueBody": "{task} was due on {date}.",
+  "@notifMaintOverdueBody": {
+    "placeholders": {
+      "task": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "logTypeMaintenance": "Maintenance",
+  "adminMaintenance": "Maintenance",
+  "memberNameLabel": "Name",
+  "memberRename": "Set name",
+  "memberRenameHint": "Shown instead of the phone number. Leave blank to show the number again.",
+  "memberNameSaved": "Name saved",
+  "memberNameError": "Could not save the name. Check your connection and try again.",
+  "auditMemberRenamed": "Renamed a member",
+  "addPond": "Add pond",
+  "addPondTitle": "Add a pond",
+  "addPondBody": "Enter the device ID the sensor saves its readings under in Firebase (readings/<device ID>). The new pond gets its own join code.",
+  "addPondDeviceId": "Device ID",
+  "addPondInvalidId": "Use 3 to 40 letters, numbers, - or _.",
+  "addPondNoReadings": "No readings found for that device ID. Check it in Firebase under readings.",
+  "addPondExists": "That device is already a pond.",
+  "addPondError": "Could not add the pond. Check your connection and try again.",
+  "addPondAdded": "Pond added. Join code: {code}",
+  "@addPondAdded": {
+    "placeholders": {
+      "code": {"type": "String"}
+    }
+  },
+  "addPondCreate": "Add",
+  "auditPondAdded": "Added a pond",
+  "adminPondPicker": "Pond",
+  "healthGatewayPond1Only": "The SMS gateway currently serves pond1 only.",
+  "maintConfirmTitle": "Change this schedule?",
+  "maintConfirmBody": "Reminders for {task} will follow the new schedule:",
+  "@maintConfirmBody": {
+    "placeholders": {
+      "task": {"type": "String"}
+    }
+  },
+  "maintChangeLastDone": "Last done: {from} → {to}",
+  "@maintChangeLastDone": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "maintChangeInterval": "Every: {from} → {to} days",
+  "@maintChangeInterval": {
+    "placeholders": {
+      "from": {"type": "int"},
+      "to": {"type": "int"}
+    }
+  },
+  "maintChangeNote": "Note: {from} → {to}",
+  "@maintChangeNote": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "maintConfirmYes": "Yes, change it",
+  "auditMaintenanceChanged": "Changed a maintenance schedule",
+  "adminDarkMode": "Switch to dark mode",
+  "adminLightMode": "Switch to light mode",
+  "adminSensorDevice": "Sensor device",
+  "adminPondSearchHint": "Search by pond name, ID, code, or phone",
+  "adminNoPondMatch": "No ponds match your search.",
+  "adminChoosePond": "Choose a pond",
+  "adminPondCount": "{count, plural, =1{1 pond} other{{count} ponds}}",
+  "@adminPondCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
+}

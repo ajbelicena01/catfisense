@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../l10n/l10n.dart';
+import '../models/sensor_reading.dart';
+import '../services/sensor_repository.dart';
+import '../services/threshold_controller.dart';
 import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
 import '../utils/recommendations.dart';
@@ -9,22 +14,14 @@ import '../widgets/app_header.dart';
 import '../widgets/recommendation_card.dart';
 
 /// Shows the farmer what to do, ranked by urgency, whenever a sensor reading
-/// drifts into warning/critical territory. Reached from the Dashboard's
-/// "Insights" nav icon (and by tapping the status banner) so the readings
-/// shown here always match what the farmer just saw on the Dashboard.
+/// drifts into warning/critical territory. It follows the pond's latest
+/// reading live, wherever it is opened from (Dashboard, bottom bar, menu).
 class RecommendationsPage extends StatefulWidget {
-  const RecommendationsPage({
-    super.key,
-    this.ph = 7.2,
-    this.temperature = 27,
-    this.dissolvedOxygen = 5.5,
-    this.ammonia = 0.01,
-  });
+  const RecommendationsPage({super.key, this.initialReading});
 
-  final double ph;
-  final double temperature;
-  final double dissolvedOxygen;
-  final double ammonia;
+  /// The reading the caller is already showing, so the page opens without
+  /// waiting for the database.
+  final SensorReading? initialReading;
 
   @override
   State<RecommendationsPage> createState() => _RecommendationsPageState();
@@ -34,14 +31,17 @@ class _RecommendationsPageState extends State<RecommendationsPage> with SingleTi
   late final AnimationController _headerController;
   late final Animation<double> _headerFade;
   late final Animation<Offset> _headerSlide;
+  late final Stream<SensorReading?> _latest = SensorRepository().latestReading();
 
   @override
   void initState() {
     super.initState();
     _headerController = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
     _headerFade = CurvedAnimation(parent: _headerController, curve: Curves.easeOut);
-    _headerSlide = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _headerController, curve: Curves.easeOutCubic));
+    _headerSlide = Tween<Offset>(
+      begin: const Offset(0, 0.12),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _headerController, curve: Curves.easeOutCubic));
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) _headerController.forward();
     });
@@ -55,15 +55,9 @@ class _RecommendationsPageState extends State<RecommendationsPage> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    // Redraw when an admin changes the pond health ranges.
+    context.watch<ThresholdController>();
     final palette = AppPalette.of(context);
-    final recommendations = buildRecommendations(
-      ph: widget.ph,
-      temperature: widget.temperature,
-      dissolvedOxygen: widget.dissolvedOxygen,
-      ammonia: widget.ammonia,
-    );
-    // Already sorted critical-first by buildRecommendations.
-    final overallStatus = recommendations.isEmpty ? PondStatus.healthy : recommendations.first.status;
 
     return Scaffold(
       backgroundColor: palette.background,
@@ -74,43 +68,98 @@ class _RecommendationsPageState extends State<RecommendationsPage> with SingleTi
           children: [
             const AppHeader(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FadeTransition(
-                      opacity: _headerFade,
-                      child: SlideTransition(
-                        position: _headerSlide,
-                        child: _RecommendationsSummary(status: overallStatus, issueCount: recommendations.length),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    if (recommendations.isEmpty)
-                      const _AllClearCard()
-                    else ...[
-                      Text(
-                        'What you should do',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: palette.textPrimary),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Sorted by urgency — handle critical items first.',
-                        style: TextStyle(fontSize: 13, color: palette.textSecondary),
-                      ),
-                      const SizedBox(height: 16),
-                      for (var i = 0; i < recommendations.length; i++)
-                        RecommendationCard(recommendation: recommendations[i], index: i),
-                    ],
-                    const SizedBox(height: 4),
-                    const _GeneralTipsCard(),
-                  ],
-                ),
+              child: StreamBuilder<SensorReading?>(
+                stream: _latest,
+                builder: (context, snapshot) {
+                  final reading = snapshot.data ?? widget.initialReading;
+                  if (reading == null) {
+                    return snapshot.connectionState == ConnectionState.waiting
+                        ? const Center(child: CircularProgressIndicator())
+                        : _NoReadings(palette: palette);
+                  }
+                  return _content(context, reading);
+                },
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _content(BuildContext context, SensorReading reading) {
+    final palette = AppPalette.of(context);
+    final recommendations = buildRecommendations(
+      context.l10n,
+      ph: reading.ph,
+      temperature: reading.temperature,
+      dissolvedOxygen: reading.dissolvedOxygen,
+      ammonia: reading.ammonia,
+    );
+    // Already sorted critical-first by buildRecommendations.
+    final overallStatus = recommendations.isEmpty ? PondStatus.healthy : recommendations.first.status;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FadeTransition(
+            opacity: _headerFade,
+            child: SlideTransition(
+              position: _headerSlide,
+              child: _RecommendationsSummary(status: overallStatus, issueCount: recommendations.length),
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (recommendations.isEmpty)
+            const _AllClearCard()
+          else ...[
+            Text(
+              context.l10n.recWhatToDo,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: palette.textPrimary),
+            ),
+            const SizedBox(height: 4),
+            Text(context.l10n.recSortedByUrgency, style: TextStyle(fontSize: 13, color: palette.textSecondary)),
+            const SizedBox(height: 16),
+            for (var i = 0; i < recommendations.length; i++)
+              RecommendationCard(recommendation: recommendations[i], index: i),
+          ],
+          const SizedBox(height: 4),
+          const _GeneralTipsCard(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Instead of advice, when the pond's sensor has not sent anything yet.
+class _NoReadings extends StatelessWidget {
+  const _NoReadings({required this.palette});
+
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.sensors_off_outlined, size: 44, color: palette.textSecondary),
+          const SizedBox(height: 12),
+          Text(
+            context.l10n.dashboardNoReadingsTitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: palette.textPrimary),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            context.l10n.dashboardNoReadingsBody,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, height: 1.4, color: palette.textSecondary),
+          ),
+        ],
       ),
     );
   }
@@ -127,23 +176,11 @@ class _RecommendationsSummary extends StatelessWidget {
     final palette = AppPalette.of(context);
     final style = styleFor(status);
     final accent = statusAccent(status, darkMode: palette.isDark);
-    final plural = issueCount == 1 ? '' : 's';
+    final l10n = context.l10n;
     final (title, subtitle, icon) = switch (status) {
-      PondStatus.healthy => (
-          'No action needed',
-          'All sensor readings are within the healthy range.',
-          Icons.verified_outlined,
-        ),
-      PondStatus.warning => (
-          '$issueCount parameter$plural need attention',
-          'Take the steps below soon to keep the pond healthy.',
-          Icons.lightbulb_outline,
-        ),
-      PondStatus.critical => (
-          '$issueCount parameter$plural critical',
-          'Act now — fish health may be at risk.',
-          Icons.error_outline,
-        ),
+      PondStatus.healthy => (l10n.recNoActionTitle, l10n.recNoActionBody, Icons.verified_outlined),
+      PondStatus.warning => (l10n.recWarningTitle(issueCount), l10n.recWarningBody, Icons.lightbulb_outline),
+      PondStatus.critical => (l10n.recCriticalTitle(issueCount), l10n.recCriticalBody, Icons.error_outline),
     };
 
     return Container(
@@ -244,12 +281,12 @@ class _AllClearCardState extends State<_AllClearCard> with SingleTickerProviderS
           ),
           const SizedBox(height: 18),
           Text(
-            'Pond conditions look great',
+            context.l10n.recAllClearTitle,
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: palette.textPrimary),
           ),
           const SizedBox(height: 6),
           Text(
-            'No corrective action needed right now. Keep up the good care!',
+            context.l10n.recAllClearBody,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: palette.textSecondary, height: 1.4),
           ),
@@ -282,13 +319,13 @@ class _GeneralTipsCard extends StatelessWidget {
               Icon(Icons.lightbulb_outline, color: palette.primary, size: 20),
               const SizedBox(width: 8),
               Text(
-                'General Pond Care Tips',
+                context.l10n.recTipsTitle,
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: palette.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          ...generalPondCareTips.map(
+          ...generalPondCareTips(context.l10n).map(
             (tip) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(

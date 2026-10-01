@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 import '../utils/slide_page_route.dart';
 import '../widgets/onboarding_scaffold.dart';
-import 'dashboard_page.dart';
 import 'onboarding_screen3.dart';
 
 const _assets = [
@@ -20,13 +21,13 @@ class OnboardingScreen2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return OnboardingScaffold(
       illustrationAssets: _assets,
-      headline: 'Track what matters\nin real time.',
-      description: 'View pH, temperature, ammonia, and dissolved oxygen readings at a glance.',
+      headline: context.l10n.onboarding2Headline,
+      description: context.l10n.onboarding2Body,
       pageIndex: 1,
       totalPages: 4,
       onNext: () => Navigator.of(context).push(slidePageRoute(const OnboardingScreen3())),
       onSkip: () => Navigator.of(context)
-          .pushAndRemoveUntil(slidePageRoute(const DashboardPage()), (route) => false),
+          .popUntil((route) => route.isFirst),
     );
   }
 }

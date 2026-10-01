@@ -1,3 +1,5 @@
+import 'thresholds.dart';
+
 /// Computes the 0-4 diverging Pond Health Index used by the History charts,
 /// from raw readings — the Realtime Database only stores raw sensor values,
 /// not a precomputed index.
@@ -10,24 +12,56 @@
 /// the dashboard's worstOf() status, so one critical parameter can't get
 /// diluted into looking like a "warning" here while the dashboard says
 /// "critical" for the same moment.
+///
+/// The healthy and warning bands come from [Thresholds.current]; the point
+/// where the index bottoms out (0 or 4) sits one more band-width beyond the
+/// warning edge.
 double computePhi({
   required double ph,
   required double temperature,
   required double dissolvedOxygen,
   required double ammonia,
 }) {
+  final t = Thresholds.current;
+  const d = Thresholds.defaults;
   final scores = [
-    _diverging(value: ph, criticalLow: 5.0, warningLow: 6.0, healthyLow: 6.5, healthyHigh: 8.5, warningHigh: 9.0, criticalHigh: 10.0),
-    _diverging(value: temperature, criticalLow: 15, warningLow: 20, healthyLow: 25, healthyHigh: 30, warningHigh: 33, criticalHigh: 38),
-    _lowIsBad(value: dissolvedOxygen, criticalMin: 1.0, warningMin: 3.0, healthyMin: 5.0),
-    _highIsBad(value: ammonia, healthyMax: 0.02, warningMax: 0.05, criticalMax: 0.08),
+    _divergingFor(ph, t.ph, d.ph),
+    _divergingFor(temperature, t.temperature, d.temperature),
+    () {
+      final healthy = t.dissolvedOxygen.healthyMin ?? d.dissolvedOxygen.healthyMin!;
+      final warning = t.dissolvedOxygen.warningMin ?? d.dissolvedOxygen.warningMin!;
+      return _lowIsBad(value: dissolvedOxygen, criticalMin: warning - (healthy - warning), warningMin: warning, healthyMin: healthy);
+    }(),
+    () {
+      final healthy = t.ammonia.healthyMax ?? d.ammonia.healthyMax!;
+      final warning = t.ammonia.warningMax ?? d.ammonia.warningMax!;
+      return _highIsBad(value: ammonia, healthyMax: healthy, warningMax: warning, criticalMax: warning + (warning - healthy));
+    }(),
   ];
   return scores.reduce((a, b) => (a - 2).abs() >= (b - 2).abs() ? a : b);
 }
 
 double _lerp(double value, double fromX, double toX, double fromY, double toY) {
+  // Two band edges set to the same value leave no room to interpolate.
+  if (toX == fromX) return toY;
   final t = (value - fromX) / (toX - fromX);
   return fromY + t * (toY - fromY);
+}
+
+double _divergingFor(double value, ParamRange range, ParamRange fallback) {
+  final healthyLow = range.healthyMin ?? fallback.healthyMin!;
+  final healthyHigh = range.healthyMax ?? fallback.healthyMax!;
+  final warningLow = range.warningMin ?? fallback.warningMin!;
+  final warningHigh = range.warningMax ?? fallback.warningMax!;
+  return _diverging(
+    value: value,
+    criticalLow: warningLow - (healthyLow - warningLow),
+    warningLow: warningLow,
+    healthyLow: healthyLow,
+    healthyHigh: healthyHigh,
+    warningHigh: warningHigh,
+    criticalHigh: warningHigh + (warningHigh - healthyHigh),
+  );
 }
 
 /// For parameters where both too-low and too-high are unhealthy (pH, temperature).

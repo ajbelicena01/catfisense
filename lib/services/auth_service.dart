@@ -3,12 +3,33 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 import '../firebase_options.dart';
+import '../l10n/app_localizations.dart';
+
+enum AuthError {
+  phoneTaken,
+  weakPassword,
+  wrongCredentials,
+  recentLogin,
+  notSignedIn,
+  samePhone,
+  generic;
+
+  String message(AppLocalizations l10n) => switch (this) {
+    AuthError.phoneTaken => l10n.authPhoneTaken,
+    AuthError.weakPassword => l10n.authWeakPassword,
+    AuthError.wrongCredentials => l10n.authWrongCredentials,
+    AuthError.recentLogin => l10n.authRecentLogin,
+    AuthError.notSignedIn => l10n.authNotSignedIn,
+    AuthError.samePhone => l10n.authSamePhone,
+    AuthError.generic => l10n.authGeneric,
+  };
+}
 
 class AuthResult {
   const AuthResult.success() : error = null;
-  const AuthResult.failure(this.error);
+  const AuthResult.failure(AuthError this.error);
 
-  final String? error;
+  final AuthError? error;
   bool get success => error == null;
 }
 
@@ -39,6 +60,19 @@ class AuthService {
   /// synthetic email's local part for display purposes.
   String? get currentPhoneDigits => _auth.currentUser?.email?.split('@').first;
 
+  /// Admin accounts log in with a username such as `admin_belicena`
+  /// instead of a phone number; they map to `<username>@catfisense.app` the
+  /// same way phone numbers do. Admin accounts are created by the project
+  /// team, never through the app's sign-up.
+  static final _adminUsername = RegExp(r'^admin_[a-z0-9_]{2,30}$');
+
+  static bool isAdminUsername(String input) => _adminUsername.hasMatch(input.trim().toLowerCase());
+
+  String _emailForLogin(String phoneOrUsername) {
+    final input = phoneOrUsername.trim().toLowerCase();
+    return isAdminUsername(input) ? '$input@catfisense.app' : _emailForPhone(input);
+  }
+
   String _emailForPhone(String phone) {
     final digits = phone.replaceAll(RegExp(r'\D'), '');
     return '$digits@catfisense.app';
@@ -50,10 +84,15 @@ class AuthService {
         email: _emailForPhone(phone),
         password: password,
       );
-      await _writeProfile(uid: credential.user!.uid, phone: phone);
+      try {
+        await _writeProfile(uid: credential.user!.uid, phone: phone);
+      } on FirebaseException {
+        // The account already exists and is signed in; a missing profile
+        // must not strand the user on a spinner with a "taken" number.
+      }
       return const AuthResult.success();
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_message(e.code));
+      return AuthResult.failure(_error(e.code));
     }
   }
 
@@ -64,15 +103,16 @@ class AuthService {
     });
   }
 
+  /// [phone] may also be an admin username (see [isAdminUsername]).
   Future<AuthResult> login({required String phone, required String password}) async {
     try {
       await _auth.signInWithEmailAndPassword(
-        email: _emailForPhone(phone),
+        email: _emailForLogin(phone),
         password: password,
       );
       return const AuthResult.success();
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_message(e.code));
+      return AuthResult.failure(_error(e.code));
     }
   }
 
@@ -85,7 +125,7 @@ class AuthService {
       );
       return const AuthResult.success();
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_message(e.code));
+      return AuthResult.failure(_error(e.code));
     }
   }
 
@@ -106,7 +146,7 @@ class AuthService {
   Future<AuthResult> updatePhoneNumber({required String currentPassword, required String newPhone}) async {
     final oldUser = _auth.currentUser;
     if (oldUser == null || oldUser.email == null) {
-      return const AuthResult.failure('You need to be signed in to do this.');
+      return const AuthResult.failure(AuthError.notSignedIn);
     }
 
     final reauth = await _reauthenticate(oldUser, currentPassword);
@@ -114,14 +154,14 @@ class AuthService {
 
     final newEmail = _emailForPhone(newPhone);
     if (newEmail == oldUser.email) {
-      return const AuthResult.failure('That is already your registered number.');
+      return const AuthResult.failure(AuthError.samePhone);
     }
 
     UserCredential credential;
     try {
       credential = await _auth.createUserWithEmailAndPassword(email: newEmail, password: currentPassword);
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_message(e.code));
+      return AuthResult.failure(_error(e.code));
     }
     await _writeProfile(uid: credential.user!.uid, phone: newPhone);
 
@@ -136,7 +176,7 @@ class AuthService {
   Future<AuthResult> updatePassword({required String currentPassword, required String newPassword}) async {
     final user = _auth.currentUser;
     if (user == null || user.email == null) {
-      return const AuthResult.failure('You need to be signed in to do this.');
+      return const AuthResult.failure(AuthError.notSignedIn);
     }
 
     final reauth = await _reauthenticate(user, currentPassword);
@@ -146,24 +186,15 @@ class AuthService {
       await user.updatePassword(newPassword);
       return const AuthResult.success();
     } on FirebaseAuthException catch (e) {
-      return AuthResult.failure(_message(e.code));
+      return AuthResult.failure(_error(e.code));
     }
   }
 
-  String _message(String code) {
-    switch (code) {
-      case 'email-already-in-use':
-        return 'This phone number is already registered.';
-      case 'weak-password':
-        return 'Password must be at least 6 characters.';
-      case 'user-not-found':
-      case 'wrong-password':
-      case 'invalid-credential':
-        return 'Incorrect phone number or password.';
-      case 'requires-recent-login':
-        return 'Please re-enter your current password to continue.';
-      default:
-        return 'Something went wrong. Please try again.';
-    }
-  }
+  AuthError _error(String code) => switch (code) {
+    'email-already-in-use' => AuthError.phoneTaken,
+    'weak-password' => AuthError.weakPassword,
+    'user-not-found' || 'wrong-password' || 'invalid-credential' => AuthError.wrongCredentials,
+    'requires-recent-login' => AuthError.recentLogin,
+    _ => AuthError.generic,
+  };
 }

@@ -70,8 +70,8 @@ class PushNotificationService {
     try {
       await NotificationService.instance.show(
         id: message.messageId?.hashCode ?? 0,
-        title: message.notification?.title ?? 'Pond alert',
-        body: message.notification?.body ?? 'A new pond alert has arrived.',
+        title: message.notification?.title ?? NotificationService.instance.l10n.notifPushFallbackTitle,
+        body: message.notification?.body ?? NotificationService.instance.l10n.notifPushFallbackBody,
       );
     } catch (error) {
       debugPrint('Unable to show foreground FCM notification: $error');

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../utils/slide_page_route.dart';
+import '../l10n/l10n.dart';
+
 import '../widgets/onboarding_scaffold.dart';
-import 'dashboard_page.dart';
 
 const _assets = [
   'assets/onboarding/screen4/3.png',
@@ -20,14 +20,14 @@ class OnboardingScreen4 extends StatelessWidget {
   Widget build(BuildContext context) {
     return OnboardingScaffold(
       illustrationAssets: _assets,
-      headline: 'Get alerts when\naction is needed.',
-      description: 'Receive mobile and SMS alerts with expert-guided recommendations.',
+      headline: context.l10n.onboarding4Headline,
+      description: context.l10n.onboarding4Body,
       pageIndex: 3,
       totalPages: 4,
       onNext: () => Navigator.of(context)
-          .pushAndRemoveUntil(slidePageRoute(const DashboardPage()), (route) => false),
+          .popUntil((route) => route.isFirst),
       onSkip: () => Navigator.of(context)
-          .pushAndRemoveUntil(slidePageRoute(const DashboardPage()), (route) => false),
+          .popUntil((route) => route.isFirst),
     );
   }
 }

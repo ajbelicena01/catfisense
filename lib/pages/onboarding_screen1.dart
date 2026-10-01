@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 import '../utils/slide_page_route.dart';
 import '../widgets/onboarding_scaffold.dart';
-import 'dashboard_page.dart';
 import 'onboarding_screen2.dart';
 
 const _assets = [
@@ -33,13 +34,13 @@ class OnboardingScreen1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return OnboardingScaffold(
       illustrationAssets: _assets,
-      headline: "Your pond's health\nis in your hands.",
-      description: 'Monitor your catfish pond anytime, anywhere.',
+      headline: context.l10n.onboarding1Headline,
+      description: context.l10n.onboarding1Body,
       pageIndex: 0,
       totalPages: 4,
       onNext: () => Navigator.of(context).push(slidePageRoute(const OnboardingScreen2())),
       onSkip: () => Navigator.of(context)
-          .pushAndRemoveUntil(slidePageRoute(const DashboardPage()), (route) => false),
+          .popUntil((route) => route.isFirst),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
 
@@ -19,7 +20,6 @@ class BatteryStatusRow extends StatelessWidget {
 
     final palette = AppPalette.of(context);
     final status = batteryStatus(value);
-    final style = styleFor(status);
     final accent = statusAccent(status, darkMode: palette.isDark);
     final icon = switch (status) {
       PondStatus.healthy => Icons.battery_full,
@@ -41,12 +41,12 @@ class BatteryStatusRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Device Battery',
+              context.l10n.batteryLabel,
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: palette.textPrimary),
             ),
           ),
           Text(
-            '${style.shortLabel}: $value%',
+            '${statusShortLabel(context.l10n, status)}: $value%',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w800,

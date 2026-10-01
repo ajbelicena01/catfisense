@@ -1,41 +1,210 @@
 {
   "rules": {
-    "users": {
+    "admins": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".read": "auth != null && auth.uid === $uid"
       }
     },
-    "ponds": {
-      "$pondId": {
-        ".read": "auth != null && root.child('ponds').child($pondId).child('members').child(auth.uid).exists()",
-        "members": {
-          ".write": false
+    "users": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "pondCode": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-Z0-9]{8}$/)"
         },
-        "readings": {
-          ".write": false
-        },
-        "latestReading": {
-          ".write": false
-        },
-        "alerts": {
-          ".write": false
-        },
-        "settings": {
-          ".write": "auth != null && root.child('ponds').child($pondId).child('members').child(auth.uid).val() === 'owner'"
+        "pondId": {
+          ".write": "auth != null && !newData.exists() && root.child('admins').child(auth.uid).exists()",
+          ".validate": "newData.isString() && newData.parent().parent().parent().child('ponds').child(newData.val()).child('members').child($uid).exists()"
         }
       }
     },
-    "pondInvites": {
-      ".read": false,
-      ".write": false
+    "pondCodes": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && (root.child('admins').child(auth.uid).exists() ? newData.parent().parent().child('ponds').child(newData.val()).exists() : root.child('ponds').child(newData.val()).child('members').child(auth.uid).val() === 'owner')) || (!newData.exists() && (root.child('admins').child(auth.uid).exists() || root.child('ponds').child(data.val()).child('members').child(auth.uid).val() === 'owner')))",
+        ".validate": "newData.isString() && $code.matches(/^[A-Z0-9]{8}$/)"
+      }
+    },
+    "ponds": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
+      "$pondId": {
+        ".read": "auth != null && data.child('members').child(auth.uid).exists()",
+        "name": {
+          ".write": "auth != null && newData.exists() && (root.child('admins').child(auth.uid).exists() || data.parent().child('members').child(auth.uid).val() === 'owner')",
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40 && !newData.val().beginsWith(' ') && !newData.val().endsWith(' ') && newData.parent().child('deviceId').exists()"
+        },
+        "deviceId": {
+          ".write": "auth != null && !data.exists() && root.child('admins').child(auth.uid).exists()",
+          ".validate": "newData.val() === $pondId && $pondId.matches(/^[A-Za-z0-9_-]{3,40}$/) && root.child('readings').child($pondId).exists()"
+        },
+        "code": {
+          ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || data.parent().child('members').child(auth.uid).val() === 'owner')",
+          ".validate": "newData.isString() && newData.parent().parent().parent().child('pondCodes').child(newData.val()).val() === $pondId && newData.parent().child('deviceId').exists()"
+        },
+        "ownerUid": {
+          ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid && root.child('pondCodes').child(newData.parent().parent().parent().child('users').child(auth.uid).child('pondCode').val()).val() === $pondId) || (!newData.exists() && root.child('admins').child(auth.uid).exists() && !newData.parent().child('members').child(data.val()).exists()))"
+        },
+        "caretakerUid": {
+          ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid && data.parent().child('ownerUid').exists() && data.parent().child('ownerUid').val() !== auth.uid && root.child('pondCodes').child(newData.parent().parent().parent().child('users').child(auth.uid).child('pondCode').val()).val() === $pondId) || (!newData.exists() && (root.child('admins').child(auth.uid).exists() || data.parent().child('members').child(auth.uid).val() === 'owner') && !newData.parent().child('members').child(data.val()).exists()))"
+        },
+        "members": {
+          "$memberUid": {
+            ".write": "auth != null && ((auth.uid === $memberUid && !data.exists() && ((newData.val() === 'owner' && newData.parent().parent().child('ownerUid').val() === auth.uid) || (newData.val() === 'caretaker' && newData.parent().parent().child('caretakerUid').val() === auth.uid))) || (!newData.exists() && data.val() === 'caretaker' && data.parent().child(auth.uid).val() === 'owner' && newData.parent().parent().child('caretakerUid').val() !== $memberUid) || (!newData.exists() && root.child('admins').child(auth.uid).exists() && newData.parent().parent().child('ownerUid').val() !== $memberUid && newData.parent().parent().child('caretakerUid').val() !== $memberUid))"
+          }
+        },
+        "memberPhones": {
+          "$memberUid": {
+            ".write": "auth != null && ((auth.uid === $memberUid && newData.parent().parent().child('members').child($memberUid).exists()) || (!newData.exists() && (root.child('admins').child(auth.uid).exists() || data.parent().parent().child('members').child(auth.uid).val() === 'owner')))",
+            ".validate": "newData.isString() && newData.val().matches(/^09[0-9]{9}$/)"
+          }
+        },
+        "memberNames": {
+          "$uid": {
+            ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || (!newData.exists() && root.child('ponds').child($pondId).child('members').child(auth.uid).val() === 'owner'))",
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40 && !newData.val().beginsWith(' ') && !newData.val().endsWith(' ') && newData.parent().parent().child('members').child($uid).exists()"
+          }
+        },
+        "logs": {
+          ".indexOn": [
+            "at"
+          ],
+          "$logId": {
+            ".write": "auth != null && ((!data.exists() && newData.child('byUid').val() === auth.uid && root.child('ponds').child($pondId).child('members').child(auth.uid).exists()) || (data.exists() && !newData.exists() && ((data.child('byUid').val() === auth.uid && root.child('ponds').child($pondId).child('members').child(auth.uid).exists()) || root.child('ponds').child($pondId).child('members').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).exists())))",
+            ".validate": "newData.hasChildren(['type', 'at', 'byUid', 'byRole']) && newData.child('byRole').val() === root.child('ponds').child($pondId).child('members').child(auth.uid).val()",
+            "type": {
+              ".validate": "newData.isString() && newData.val().matches(/^(feeding|waterChange|aerator|treatment|maintenance|other)$/)"
+            },
+            "at": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 60000 && newData.val() >= now - 2592000000"
+            },
+            "byUid": {
+              ".validate": "newData.isString()"
+            },
+            "byRole": {
+              ".validate": "newData.isString()"
+            },
+            "byPhone": {
+              ".validate": "newData.isString() && newData.val().matches(/^09[0-9]{9}$/)"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+            },
+            "task": {
+              ".validate": "newData.isString() && newData.val().matches(/^(doElectrolyte|phBuffer|modemLoad|gsmLoad)$/) && newData.parent().child('type').val() === 'maintenance'"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "maintenance": {
+          "$task": {
+            ".write": "auth != null && newData.exists() && (root.child('ponds').child($pondId).child('members').child(auth.uid).exists() || root.child('admins').child(auth.uid).exists())",
+            ".validate": "$task.matches(/^(doElectrolyte|phBuffer|modemLoad|gsmLoad)$/) && newData.hasChildren(['lastDone', 'intervalDays', 'byUid', 'updatedAt'])",
+            "lastDone": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 60000 && newData.val() >= now - 31622400000"
+            },
+            "intervalDays": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 365 && newData.val() % 1 === 0"
+            },
+            "byUid": {
+              ".validate": "newData.val() === auth.uid"
+            },
+            "updatedAt": {
+              ".validate": "newData.val() === now"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "settings": {
+          ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || data.parent().child('members').child(auth.uid).val() === 'owner')"
+        }
+      }
     },
     "readings": {
       "$deviceId": {
-        ".read": "auth != null && root.child('ponds').child('pond1').child('members').child(auth.uid).exists()",
+        ".read": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('ponds').child($deviceId).child('members').child(auth.uid).exists())",
         "$entryId": {
-          ".write": false,
+          ".write": "auth != null && !data.exists() && ($deviceId === 'pond1' || $deviceId === auth.uid)",
           ".validate": "newData.hasChildren(['ph', 'temperature', 'dissolvedOxygen', 'ammonia', 'recordedAt'])"
+        }
+      }
+    },
+    "smsQueue": {
+      "$device": {
+        ".read": "auth != null",
+        "$id": {
+          ".write": "auth != null",
+          ".validate": "newData.hasChildren(['to', 'message', 'status'])"
+        }
+      }
+    },
+    "smsRecipients": {
+      "$pondId": {
+        ".read": "auth != null",
+        "$key": {
+          ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('ponds').child($pondId).child('members').child(auth.uid).val() === 'owner')",
+          ".validate": "newData.isString() && newData.val().matches(/^\\+639[0-9]{9}$/) && newData.val() === '+' + $key"
+        }
+      }
+    },
+    "gatewayStatus": {
+      "$device": {
+        ".read": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('ponds').child($device).child('members').child(auth.uid).val() === 'owner')",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['lastSeen']) && newData.child('lastSeen').isNumber() && newData.child('lastSeen').val() <= now + 60000"
+      }
+    },
+    "config": {
+      "thresholds": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('admins').child(auth.uid).exists()",
+        ".validate": "newData.hasChildren(['ph', 'temperature', 'dissolvedOxygen', 'ammonia'])",
+        "$param": {
+          "$field": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+          }
+        }
+      }
+    },
+    "auditLog": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
+      ".indexOn": [
+        "at"
+      ],
+      "$entryId": {
+        ".write": "auth != null && !data.exists() && newData.child('byUid').val() === auth.uid && (root.child('admins').child(auth.uid).exists() || root.child('ponds').child(newData.child('pondId').val()).child('members').child(auth.uid).val() === 'owner')",
+        ".validate": "newData.hasChildren(['at', 'byUid', 'byName', 'action'])",
+        "at": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 60000 && newData.val() >= now - 600000"
+        },
+        "byUid": {
+          ".validate": "newData.isString()"
+        },
+        "byName": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "action": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "pondId": {
+          ".validate": "newData.isString()"
+        },
+        "target": {
+          ".validate": "newData.isString() && newData.val().length <= 100"
+        },
+        "details": {
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "$other": {
+          ".validate": false
         }
       }
     },

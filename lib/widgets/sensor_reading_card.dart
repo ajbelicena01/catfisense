@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
 
@@ -74,7 +75,7 @@ class SensorReadingCard extends StatelessWidget {
               Icon(style.icon, size: 16, color: accent),
               const SizedBox(width: 5),
               Text(
-                style.shortLabel,
+                statusShortLabel(context.l10n, status),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -112,18 +113,18 @@ class SensorReadingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _InfoSection(title: 'What it measures', body: description, palette: palette),
+              _InfoSection(title: context.l10n.cardWhatItMeasures, body: description, palette: palette),
               const SizedBox(height: 16),
-              _InfoSection(title: 'Why it matters', body: pondImpact, palette: palette),
+              _InfoSection(title: context.l10n.cardWhyItMatters, body: pondImpact, palette: palette),
               const SizedBox(height: 16),
-              _InfoSection(title: 'Optimal range', body: optimalRange, palette: palette),
+              _InfoSection(title: context.l10n.cardOptimalRange, body: optimalRange, palette: palette),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('CLOSE', style: TextStyle(color: palette.primary)),
+            child: Text(context.l10n.commonClose, style: TextStyle(color: palette.primary)),
           ),
         ],
       ),

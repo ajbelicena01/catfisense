@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
 import '../utils/recommendations.dart';
@@ -130,7 +131,7 @@ class _RecommendationCardState extends State<RecommendationCard> with SingleTick
                                   Icon(style.icon, size: 14, color: accent),
                                   const SizedBox(width: 4),
                                   Text(
-                                    style.shortLabel,
+                                    statusShortLabel(context.l10n, rec.status),
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,

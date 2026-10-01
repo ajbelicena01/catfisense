@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show DateTimeRange;
+import 'package:intl/intl.dart';
 
 import '../models/sensor_reading.dart';
 import '../services/sensor_repository.dart';
@@ -41,23 +42,16 @@ class SensorHistoryPoint {
     );
   }
 
-  String label(HistoryRange range) {
-    switch (range) {
-      case HistoryRange.daily:
-        final hour12 = time.hour % 12 == 0 ? 12 : time.hour % 12;
-        final period = time.hour >= 12 ? 'PM' : 'AM';
-        return '$hour12$period';
-      case HistoryRange.weekly:
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        return days[time.weekday - 1];
-      case HistoryRange.monthly:
-      case HistoryRange.custom:
-        return '${time.month}/${time.day}';
-    }
-  }
+  /// The chart's x-axis label for this point, in [locale]: "7 AM", "Mon", or "9/30".
+  String label(HistoryRange range, String locale) => switch (range) {
+    HistoryRange.daily => DateFormat.j(locale).format(time),
+    HistoryRange.weekly => DateFormat.E(locale).format(time),
+    HistoryRange.monthly || HistoryRange.custom => DateFormat.Md(locale).format(time),
+  };
 }
 
-(DateTime start, DateTime end) _windowFor(HistoryRange range, {DateTimeRange? customRange}) {
+/// The start and end time a history range covers.
+(DateTime start, DateTime end) historyWindow(HistoryRange range, {DateTimeRange? customRange}) {
   final now = DateTime.now();
   switch (range) {
     case HistoryRange.daily:
@@ -78,7 +72,7 @@ Stream<List<SensorHistoryPoint>> watchHistory(
   DateTimeRange? customRange,
   SensorRepository? repository,
 }) {
-  final (start, end) = _windowFor(range, customRange: customRange);
+  final (start, end) = historyWindow(range, customRange: customRange);
   return (repository ?? SensorRepository())
       .history(start: start, end: end)
       .map((readings) => readings.map(SensorHistoryPoint.fromReading).toList());

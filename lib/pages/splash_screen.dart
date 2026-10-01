@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 import '../widgets/app_buttons.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
@@ -51,16 +53,16 @@ class SplashScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const Spacer(flex: 3),
-                  Image.asset('assets/images/logo.png', width: 280),
+                  Image.asset('assets/images/logo_header.png', width: 280),
                   const Spacer(flex: 2),
                   FilledActionButton(
-                    label: 'LOGIN',
+                    label: context.l10n.welcomeLogin,
                     onPressed: () => Navigator.of(context)
                         .push(MaterialPageRoute(builder: (_) => const LoginPage())),
                   ),
                   const SizedBox(height: 16),
                   OutlinedActionButton(
-                    label: 'SIGN UP',
+                    label: context.l10n.welcomeSignup,
                     onPressed: () => Navigator.of(context)
                         .push(MaterialPageRoute(builder: (_) => const SignupPage())),
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/l10n.dart';
 import '../services/alert_preferences.dart';
 import '../theme/app_theme.dart';
 import 'themed_action_button.dart';
@@ -32,18 +33,18 @@ Future<void> showAlertConsentDialog(BuildContext context) async {
                   Icon(Icons.notifications_active_outlined, color: palette.primary, size: 36),
                   const SizedBox(height: 16),
                   Text(
-                    'Stay on top of your pond',
+                    context.l10n.consentTitle,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: palette.textPrimary),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "CatFiSense can alert you the moment a reading turns risky. Choose how you'd like to hear about it — you can change this anytime in Settings.",
+                    context.l10n.consentBody,
                     style: TextStyle(fontSize: 13, color: palette.textSecondary, height: 1.4),
                   ),
                   const SizedBox(height: 20),
                   _ConsentSwitchRow(
                     icon: Icons.notifications_outlined,
-                    label: 'Push notifications',
+                    label: context.l10n.consentPush,
                     value: pushChecked,
                     palette: palette,
                     onChanged: (value) => setState(() => pushChecked = value),
@@ -51,14 +52,14 @@ Future<void> showAlertConsentDialog(BuildContext context) async {
                   const SizedBox(height: 4),
                   _ConsentSwitchRow(
                     icon: Icons.sms_outlined,
-                    label: 'SMS alerts',
+                    label: context.l10n.consentSms,
                     value: smsChecked,
                     palette: palette,
                     onChanged: (value) => setState(() => smsChecked = value),
                   ),
                   const SizedBox(height: 24),
                   ThemedFilledButton(
-                    label: 'CONTINUE',
+                    label: context.l10n.consentContinue,
                     onPressed: () async {
                       await prefs.setPushEnabled(pushChecked);
                       await prefs.setSmsEnabled(smsChecked);

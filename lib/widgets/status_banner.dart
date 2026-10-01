@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
 
@@ -61,7 +62,7 @@ class _StatusBannerState extends State<StatusBanner> with SingleTickerProviderSt
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
-                  child: Text(style.label, textAlign: TextAlign.center),
+                  child: Text(statusBannerLabel(context.l10n, widget.status), textAlign: TextAlign.center),
                 ),
               ),
             ],

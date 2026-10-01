@@ -1,11 +1,10 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../utils/sensor_history.dart';
 import 'sensor_history_chart.dart' show phiColor;
-
-const _phiBandLabels = ['Critical', 'Warning', 'Healthy', 'Warning', 'Critical'];
 
 /// The Overall PHI is plotted on a diverging 0-4 scale where 2 (Healthy) is
 /// the center band, since the index can be unhealthy by being too high or
@@ -31,7 +30,7 @@ class PhiHistoryChart extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: Center(
           child: Text(
-            'No readings within the displayed parameter ranges.',
+            context.l10n.chartNoReadingsInParameterRanges,
             style: TextStyle(fontSize: 13, color: palette.textSecondary),
           ),
         ),
@@ -63,15 +62,18 @@ class PhiHistoryChart extends StatelessWidget {
                     getTitlesWidget: (value, meta) {
                       final i = value.toInt();
                       if (i < 0 || i > 4) return const SizedBox.shrink();
+                      final l10n = context.l10n;
+                      // 0/4 critical (low/high), 1/3 warning, 2 healthy.
+                      final bandLabels = [l10n.statusCritical, l10n.statusWarning, l10n.phiHealthy, l10n.statusWarning, l10n.statusCritical];
                       return Text(
-                        _phiBandLabels[4 - i],
+                        bandLabels[4 - i],
                         style: TextStyle(fontSize: 11, color: axisColor),
                       );
                     },
                   ),
                 ),
                 bottomTitles: AxisTitles(
-                  axisNameWidget: Text('Time', style: TextStyle(fontSize: 12, color: axisColor)),
+                  axisNameWidget: Text(context.l10n.chartTime, style: TextStyle(fontSize: 12, color: axisColor)),
                   sideTitles: SideTitles(
                     showTitles: true,
                     interval: labelStep.toDouble(),
@@ -81,7 +83,7 @@ class PhiHistoryChart extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
-                          chartPoints[i].label(range),
+                          chartPoints[i].label(range, context.l10n.localeName),
                           style: TextStyle(fontSize: 10, color: axisColor),
                         ),
                       );
@@ -109,7 +111,7 @@ class PhiHistoryChart extends StatelessWidget {
             const Icon(Icons.circle, color: phiColor, size: 10),
             const SizedBox(width: 6),
             Text(
-              'Overall PHI',
+              context.l10n.phiOverall,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,

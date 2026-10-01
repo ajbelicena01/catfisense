@@ -9,19 +9,20 @@ import '../models/sensor_reading.dart';
 /// naturally time-ordered and simple for the ESP32 firmware to construct
 /// without any special ID-generation logic.
 ///
-/// Single-device deployment: one pond, one ESP32, one owner. Data lives at
-/// a fixed device path rather than being scoped per Firebase Auth user, so
-/// the ESP32 never needs to know or re-sync a specific account's
-/// credentials — it just writes to this fixed path, and the app reads from
-/// it regardless of which account (if any) is logged in.
+/// Each pond's ID is its device's ID, so a pond's readings are at
+/// `readings/<pondId>`. The first ESP32 writes to the fixed `pond1`; newer
+/// devices write under their own Firebase login UID, which an admin then
+/// adds as a pond.
 class SensorRepository {
   SensorRepository({FirebaseDatabase? database}) : _databaseOverride = database;
 
   final FirebaseDatabase? _databaseOverride;
 
-  // Fixed device identifier. Change this if you ever support multiple
-  // ponds/devices; for now there's exactly one, so it's a constant.
-  static const String deviceId = 'pond1';
+  static const String defaultDeviceId = 'pond1';
+
+  /// The signed-in member's pond. [AuthGate] sets it before opening the
+  /// farmer screens, which all read this pond's data.
+  static String deviceId = defaultDeviceId;
 
   // On Android, the default FirebaseApp can end up auto-initialized natively
   // from google-services.json (which has no Realtime Database URL in it), so
@@ -35,6 +36,12 @@ class SensorRepository {
       );
 
   DatabaseReference get _readingsRef => _database.ref('readings/$deviceId');
+
+  /// Whether this phone currently has a live connection to the database.
+  /// Starts false and flips to true within a second or so of opening.
+  Stream<bool> connected() {
+    return _database.ref('.info/connected').onValue.map((event) => event.snapshot.value == true);
+  }
 
   /// Live latest reading, or null if this pond has no readings yet.
   Stream<SensorReading?> latestReading() {

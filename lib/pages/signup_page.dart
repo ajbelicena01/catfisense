@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/slide_page_route.dart';
@@ -8,7 +9,6 @@ import '../widgets/app_buttons.dart';
 import '../widgets/labeled_text_field.dart';
 import '../widgets/section_heading.dart';
 import 'login_page.dart';
-import 'onboarding_screen1.dart';
 import 'otp.dart';
 
 class SignupPage extends StatefulWidget {
@@ -47,16 +47,17 @@ class _SignupPageState extends State<SignupPage> {
       Navigator.of(context).push(
         slidePageRoute(
           OtpPage(
-            onConfirmed: () => Navigator.of(
-              context,
-            ).push(slidePageRoute(const OnboardingScreen1())),
+            // Back to AuthGate, which now shows the pond code screen; the
+            // onboarding tour follows once a pond is linked.
+            onConfirmed: () =>
+                Navigator.of(context).popUntil((route) => route.isFirst),
           ),
         ),
       );
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(result.error!)));
+      ).showSnackBar(SnackBar(content: Text(result.error!.message(context.l10n))));
     }
   }
 
@@ -86,41 +87,41 @@ class _SignupPageState extends State<SignupPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Image.asset('assets/images/logo.png', width: 220),
+                    Image.asset('assets/images/logo_header.png', width: 220),
                     const SizedBox(height: 24),
-                    const SectionHeading(text: 'Sign up'),
+                    SectionHeading(text: context.l10n.signupTitle),
                     const SizedBox(height: 24),
                     LabeledTextField(
-                      label: 'Phone no',
+                      label: context.l10n.fieldPhone,
                       icon: Icons.phone_android,
                       controller: _phoneController,
                       hintText: '(09) 00 000 0000',
                       keyboardType: TextInputType.phone,
-                      validator: validatePhone,
+                      validator: (value) => validatePhone(context.l10n, value),
                     ),
                     const SizedBox(height: 20),
                     LabeledTextField(
-                      label: 'Password',
+                      label: context.l10n.fieldPassword,
                       icon: Icons.lock_outline,
                       controller: _passwordController,
-                      hintText: 'enter your password',
+                      hintText: context.l10n.fieldPasswordHint,
                       obscureText: true,
-                      validator: validatePassword,
+                      validator: (value) => validatePassword(context.l10n, value),
                     ),
                     const SizedBox(height: 20),
                     LabeledTextField(
-                      label: 'Confirm Password',
+                      label: context.l10n.signupConfirmPassword,
                       icon: Icons.lock_outline,
                       controller: _confirmPasswordController,
-                      hintText: 'Confirm your password',
+                      hintText: context.l10n.signupConfirmHint,
                       obscureText: true,
                       validator: (value) => value != _passwordController.text
-                          ? 'Passwords do not match'
+                          ? context.l10n.signupPasswordsMismatch
                           : null,
                     ),
                     const SizedBox(height: 32),
                     FilledActionButton(
-                      label: 'CREATE ACCOUNT',
+                      label: context.l10n.signupButton,
                       onPressed: _submit,
                       isLoading: _isLoading,
                     ),
@@ -131,12 +132,12 @@ class _SignupPageState extends State<SignupPage> {
                           MaterialPageRoute(builder: (_) => const LoginPage()),
                         ),
                         child: RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             style: TextStyle(color: Colors.grey, fontSize: 13),
                             children: [
-                              TextSpan(text: 'Already have an Account? '),
+                              TextSpan(text: context.l10n.signupHaveAccount),
                               TextSpan(
-                                text: 'Login',
+                                text: context.l10n.signupLoginLink,
                                 style: TextStyle(
                                   color: kBrandOrange,
                                   fontWeight: FontWeight.w700,

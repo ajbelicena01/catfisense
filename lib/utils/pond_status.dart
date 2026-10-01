@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import 'thresholds.dart';
+
 enum PondStatus { healthy, warning, critical }
 
 class PondStatusStyle {
   const PondStatusStyle({
-    required this.label,
-    required this.shortLabel,
     required this.color,
     required this.background,
     required this.dotColor,
     required this.icon,
   });
 
-  final String label;
-  final String shortLabel;
   final Color color;
   final Color background;
   final Color dotColor;
@@ -22,24 +21,18 @@ class PondStatusStyle {
 
 const _statusStyles = {
   PondStatus.healthy: PondStatusStyle(
-    label: 'Pond health is good.',
-    shortLabel: 'Good',
     color: Color(0xFF087443),
     background: Color(0xFFC9FFE5),
     dotColor: Color(0xFF6BE5B3),
     icon: Icons.check_circle,
   ),
   PondStatus.warning: PondStatusStyle(
-    label: 'Pond health warning.',
-    shortLabel: 'Warning',
     color: Color(0xFF804800),
     background: Color(0xFFFFF0CC),
     dotColor: Color(0xFFFBD195),
     icon: Icons.warning_amber_rounded,
   ),
   PondStatus.critical: PondStatusStyle(
-    label: 'Pond health is critical.',
-    shortLabel: 'Critical',
     color: Color(0xFFB42335),
     background: Color(0xFFFFDBDB),
     dotColor: Color(0xFFFC98A1),
@@ -48,6 +41,20 @@ const _statusStyles = {
 };
 
 PondStatusStyle styleFor(PondStatus status) => _statusStyles[status]!;
+
+/// "Good", "Warning", "Critical" in the app's language.
+String statusShortLabel(AppLocalizations l10n, PondStatus status) => switch (status) {
+  PondStatus.healthy => l10n.statusGood,
+  PondStatus.warning => l10n.statusWarning,
+  PondStatus.critical => l10n.statusCritical,
+};
+
+/// The dashboard banner's sentence for [status].
+String statusBannerLabel(AppLocalizations l10n, PondStatus status) => switch (status) {
+  PondStatus.healthy => l10n.statusBannerGood,
+  PondStatus.warning => l10n.statusBannerWarning,
+  PondStatus.critical => l10n.statusBannerCritical,
+};
 
 /// Status accents stay visible on dark surfaces. Text labels still carry the
 /// meaning, so users do not have to distinguish colors alone.
@@ -60,32 +67,16 @@ Color statusAccent(PondStatus status, {required bool darkMode}) {
   };
 }
 
-// Reference ranges only — general aquaculture guidance for catfish, not yet
-// confirmed against your actual project research. Adjust these once you have
-// real numbers.
-PondStatus phStatus(double ph) {
-  if (ph >= 6.5 && ph <= 8.5) return PondStatus.healthy;
-  if (ph >= 6.0 && ph <= 9.0) return PondStatus.warning;
-  return PondStatus.critical;
-}
+// The bands come from Thresholds.current: the admins' saved values, or the
+// reference defaults in thresholds.dart until they save their own.
+PondStatus phStatus(double ph) => Thresholds.current.ph.statusOf(ph);
 
-PondStatus temperatureStatus(double celsius) {
-  if (celsius >= 25 && celsius <= 30) return PondStatus.healthy;
-  if (celsius >= 20 && celsius <= 33) return PondStatus.warning;
-  return PondStatus.critical;
-}
+PondStatus temperatureStatus(double celsius) => Thresholds.current.temperature.statusOf(celsius);
 
-PondStatus dissolvedOxygenStatus(double milligramsPerLiter) {
-  if (milligramsPerLiter >= 5) return PondStatus.healthy;
-  if (milligramsPerLiter >= 3) return PondStatus.warning;
-  return PondStatus.critical;
-}
+PondStatus dissolvedOxygenStatus(double milligramsPerLiter) =>
+    Thresholds.current.dissolvedOxygen.statusOf(milligramsPerLiter);
 
-PondStatus ammoniaStatus(double milligramsPerLiter) {
-  if (milligramsPerLiter <= 0.02) return PondStatus.healthy;
-  if (milligramsPerLiter <= 0.05) return PondStatus.warning;
-  return PondStatus.critical;
-}
+PondStatus ammoniaStatus(double milligramsPerLiter) => Thresholds.current.ammonia.statusOf(milligramsPerLiter);
 
 // Battery thresholds aren't water-quality-derived like the others — this is
 // the device's own power level (solar + LiFePO4), shown separately from pond

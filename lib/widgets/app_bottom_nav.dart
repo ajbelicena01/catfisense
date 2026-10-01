@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../pages/history_page.dart';
 import '../pages/recommendations_page.dart';
 import '../pages/settings_page.dart';
@@ -14,7 +15,8 @@ enum BottomNavTab { home, history, insights, settings }
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.current});
 
-  final BottomNavTab current;
+  // Null on pages that are not one of the four tabs (e.g. Alerts).
+  final BottomNavTab? current;
 
   void _goHome(BuildContext context) {
     if (current == BottomNavTab.home) return;
@@ -26,23 +28,8 @@ class AppBottomNav extends StatelessWidget {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
-  Future<void> _openInsights(BuildContext context) async {
-    if (current == BottomNavTab.insights) return;
-    final reading = await SensorRepository().latestReading().first;
-    if (!context.mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => reading == null
-            ? const RecommendationsPage()
-            : RecommendationsPage(
-                ph: reading.ph,
-                temperature: reading.temperature,
-                dissolvedOxygen: reading.dissolvedOxygen,
-                ammonia: reading.ammonia,
-              ),
-      ),
-    );
-  }
+  // The page loads the pond's latest reading itself.
+  void _openInsights(BuildContext context) => _push(context, BottomNavTab.insights, const RecommendationsPage());
 
   Future<void> _refreshLatestReading(BuildContext context) async {
     try {
@@ -51,16 +38,14 @@ class AppBottomNav extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            reading == null
-                ? 'No sensor readings are available yet.'
-                : 'Latest sensor reading refreshed.',
+            reading == null ? context.l10n.refreshNoReadings : context.l10n.refreshDone,
           ),
         ),
       );
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not refresh sensor readings.')),
+        SnackBar(content: Text(context.l10n.refreshError)),
       );
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../utils/sensor_history.dart';
@@ -9,13 +10,15 @@ class TimeRangeSelector extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onChanged,
-    required this.onCustomTap,
+    this.onCustomTap,
     this.customLabel,
   });
 
   final HistoryRange selected;
   final ValueChanged<HistoryRange> onChanged;
-  final VoidCallback onCustomTap;
+
+  /// Null hides the Custom option.
+  final VoidCallback? onCustomTap;
 
   /// Shown in place of "Custom" once a date range has been picked.
   final String? customLabel;
@@ -31,15 +34,16 @@ class TimeRangeSelector extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _option(context, 'Daily', HistoryRange.daily, onTap: () => onChanged(HistoryRange.daily)),
-          _option(context, 'Weekly', HistoryRange.weekly, onTap: () => onChanged(HistoryRange.weekly)),
-          _option(context, 'Monthly', HistoryRange.monthly, onTap: () => onChanged(HistoryRange.monthly)),
-          _option(
-            context,
-            customLabel ?? 'Custom',
-            HistoryRange.custom,
-            onTap: onCustomTap,
-          ),
+          _option(context, context.l10n.rangeDaily, HistoryRange.daily, onTap: () => onChanged(HistoryRange.daily)),
+          _option(context, context.l10n.rangeWeekly, HistoryRange.weekly, onTap: () => onChanged(HistoryRange.weekly)),
+          _option(context, context.l10n.rangeMonthly, HistoryRange.monthly, onTap: () => onChanged(HistoryRange.monthly)),
+          if (onCustomTap != null)
+            _option(
+              context,
+              customLabel ?? context.l10n.rangeCustom,
+              HistoryRange.custom,
+              onTap: onCustomTap!,
+            ),
         ],
       ),
     );

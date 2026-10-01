@@ -2,21 +2,28 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/l10n.dart';
 import '../models/sensor_reading.dart';
 import '../services/alert_preferences.dart';
 import '../services/notification_service.dart';
 import '../services/sensor_repository.dart';
+import '../services/threshold_controller.dart';
 import '../theme/app_theme.dart';
 import '../utils/pond_status.dart';
 import '../utils/sensor_history.dart';
 import '../utils/slide_page_route.dart';
+import '../utils/thresholds.dart';
+import '../utils/time_format.dart';
 import '../widgets/alert_consent_dialog.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/app_header.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../widgets/data_freshness_banner.dart';
+import '../widgets/maintenance_widgets.dart';
 import '../widgets/phi_history_chart.dart';
 import '../widgets/sensor_reading_card.dart';
 import '../widgets/status_banner.dart';
+import 'alerts_page.dart';
 import 'history_page.dart';
 import 'recommendations_page.dart';
 
@@ -33,6 +40,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
   SensorReading? _latest;
   StreamSubscription<SensorReading?>? _readingSubscription;
+
+  // Ticks so "Updated 3 min ago" and the sensor-offline banner stay current
+  // while the page is open, even when no new readings arrive.
+  Timer? _clock;
+  DateTime _now = DateTime.now();
 
   // Tracks the last status we actually notified about, so an ongoing
   // warning/critical condition doesn't re-notify on every new reading —
@@ -52,25 +64,35 @@ class _DashboardPageState extends State<DashboardPage> {
     // Live-listens to readings/pond1 in Realtime Database. This is the
     // ESP32's actual data feed. The refresh button only fetches the latest
     // RTDB record; it never creates a simulated reading.
-    _readingSubscription = _sensorRepository.latestReading().listen(_onReading);
+    // Signing out or leaving the pond ends this with a permission error;
+    // the app has already moved on by then, so it is ignored.
+    _readingSubscription = _sensorRepository.latestReading().listen(_onReading, onError: (Object _) {});
+    _clock = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
   }
 
   @override
   void dispose() {
+    _clock?.cancel();
     _readingSubscription?.cancel();
     super.dispose();
   }
 
   void _onReading(SensorReading? reading) {
     if (!mounted || reading == null) return;
-    setState(() => _latest = reading);
+    setState(() {
+      _latest = reading;
+      _now = DateTime.now();
+    });
     _checkForAlert(reading);
     if (context.read<AlertPreferences>().pushEnabled) {
       NotificationService.instance.showPersistentMonitoring(
-        body:
-            'Latest: pH ${reading.ph.toStringAsFixed(1)} '
-            '\u2022 ${reading.temperature.toStringAsFixed(0)}\u00b0C '
-            '\u2022 DO ${reading.dissolvedOxygen.toStringAsFixed(1)}',
+        body: context.l10n.monitoringLatest(
+          reading.ph.toStringAsFixed(1),
+          reading.temperature.toStringAsFixed(0),
+          reading.dissolvedOxygen.toStringAsFixed(1),
+        ),
       );
     }
   }
@@ -94,6 +116,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _maybeShowAlertConsent() async {
     if (!mounted) return;
     final prefs = context.read<AlertPreferences>();
+    final l10n = context.l10n;
     if (prefs.hasShownConsent) {
       // Already decided before; just keep the OS permission in sync with
       // their saved choice (calling this is a no-op once already granted).
@@ -101,9 +124,7 @@ class _DashboardPageState extends State<DashboardPage> {
         final granted = await prefs.requestNotificationPermission();
         if (granted) {
           await NotificationService.instance.showPersistentMonitoring(
-            body: _latest == null
-                ? 'Waiting for the latest pond sensor reading.'
-                : 'Monitoring the latest pond sensor reading.',
+            body: _latest == null ? l10n.monitoringWaiting : l10n.monitoringActive,
           );
         }
       }
@@ -113,31 +134,22 @@ class _DashboardPageState extends State<DashboardPage> {
     await showAlertConsentDialog(context);
   }
 
-  String _formatTime(DateTime time) {
-    final hour12 = time.hour % 12 == 0 ? 12 : time.hour % 12;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final period = time.hour >= 12 ? 'PM' : 'AM';
-    return '$hour12:$minute$period';
-  }
-
   void _openRecommendations() {
     final reading = _latest;
     if (reading == null) return;
     Navigator.of(context).push(
       slidePageRoute(
-        RecommendationsPage(
-          ph: reading.ph,
-          temperature: reading.temperature,
-          dissolvedOxygen: reading.dissolvedOxygen,
-          ammonia: reading.ammonia,
-        ),
+        RecommendationsPage(initialReading: reading),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Redraw when an admin changes the pond health ranges.
+    context.watch<ThresholdController>();
     final palette = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
     final reading = _latest;
 
     return Scaffold(
@@ -151,13 +163,18 @@ class _DashboardPageState extends State<DashboardPage> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                child: reading == null
-                    ? _EmptyState(palette: palette)
-                    : _Loaded(
+                child: Column(
+                  children: [
+                    DataFreshnessBanner(lastReadingAt: reading?.recordedAt, now: _now),
+                    MaintenanceBanner(now: _now),
+                    if (reading == null)
+                      _EmptyState(palette: palette)
+                    else
+                      _Loaded(
                         reading: reading,
                         palette: palette,
                         onTap: _openRecommendations,
-                        updatedLabel: _formatTime(reading.recordedAt),
+                        updatedLabel: l10n.freshnessUpdated(timeAgo(l10n, reading.recordedAt, _now)),
                         phiHistoryStream: _phiHistoryStream,
                         onHistoryTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
@@ -165,6 +182,8 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                       ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -192,7 +211,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No readings yet',
+            context.l10n.dashboardNoReadingsTitle,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -201,7 +220,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Waiting for the pond sensor to send its first reading.\nUse refresh to check RTDB again.',
+            context.l10n.dashboardNoReadingsBody,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
@@ -255,8 +274,8 @@ class _Loaded extends StatelessWidget {
                 children: [
                   Text(
                     overallStatus == PondStatus.healthy
-                        ? 'View recommendations'
-                        : 'See what to do',
+                        ? context.l10n.dashboardViewRecommendations
+                        : context.l10n.dashboardSeeWhatToDo,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -276,7 +295,7 @@ class _Loaded extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         Text(
-          'Sensor Readings',
+          context.l10n.dashboardSensorReadings,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -285,7 +304,7 @@ class _Loaded extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Updated as of $updatedLabel',
+          updatedLabel,
           style: TextStyle(fontSize: 13, color: palette.textSecondary),
         ),
         const SizedBox(height: 12),
@@ -293,26 +312,26 @@ class _Loaded extends StatelessWidget {
           children: [
             Expanded(
               child: SensorReadingCard(
-                label: 'pH Level',
+                label: context.l10n.cardPhLabel,
                 value: reading.ph.toStringAsFixed(1),
                 icon: Icons.science_outlined,
                 status: phStat,
-                description: 'pH shows how acidic or alkaline the pond water is.',
-                pondImpact: 'Large or rapid pH changes can stress fish and affect gill function. pH also changes how toxic ammonia is to fish.',
-                optimalRange: '6.5–8.5 pH',
+                description: context.l10n.cardPhDescription,
+                pondImpact: context.l10n.cardPhImpact,
+                optimalRange: healthyRangeText(Thresholds.current.ph, unit: 'pH'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: SensorReadingCard(
-                label: 'Temperature',
+                label: context.l10n.paramTemperature,
                 value: reading.temperature.toStringAsFixed(0),
                 unit: '°C',
                 icon: Icons.thermostat_outlined,
                 status: tempStat,
-                description: 'Water temperature measures how warm or cool the pond is.',
-                pondImpact: 'Temperature affects fish metabolism, appetite, growth, and oxygen demand. Warmer water also holds less dissolved oxygen.',
-                optimalRange: '25–30 °C',
+                description: context.l10n.cardTemperatureDescription,
+                pondImpact: context.l10n.cardTemperatureImpact,
+                optimalRange: healthyRangeText(Thresholds.current.temperature, unit: '°C'),
               ),
             ),
           ],
@@ -326,28 +345,28 @@ class _Loaded extends StatelessWidget {
                 value: reading.dissolvedOxygen.toStringAsFixed(1),
                 icon: Icons.bubble_chart_outlined,
                 status: doStat,
-                description: 'Dissolved oxygen (DO) is the oxygen available in the water for fish to breathe.',
-                pondImpact: 'Low DO can cause stress, poor feeding, gasping at the surface, and fish deaths.',
-                optimalRange: 'At least 5 mg/L',
+                description: context.l10n.cardOxygenDescription,
+                pondImpact: context.l10n.cardOxygenImpact,
+                optimalRange: healthyRangeText(Thresholds.current.dissolvedOxygen, unit: 'mg/L'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: SensorReadingCard(
-                label: 'Ammonia',
+                label: context.l10n.paramAmmonia,
                 value: reading.ammonia.toStringAsFixed(2),
                 icon: Icons.warning_amber_outlined,
                 status: ammoniaStat,
-                description: 'Ammonia comes mainly from fish waste and uneaten feed.',
-                pondImpact: 'Ammonia can damage fish gills. Its toxic effect increases with higher pH and temperature.',
-                optimalRange: 'At or below 0.02 mg/L',
+                description: context.l10n.cardAmmoniaDescription,
+                pondImpact: context.l10n.cardAmmoniaImpact,
+                optimalRange: healthyRangeText(Thresholds.current.ammonia, unit: 'mg/L'),
               ),
             ),
           ],
         ),
         const SizedBox(height: 20),
         Text(
-          'PHI Trend',
+          context.l10n.dashboardPhiTrend,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -356,7 +375,7 @@ class _Loaded extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Daily pond health index',
+          context.l10n.dashboardPhiSubtitle,
           style: TextStyle(fontSize: 13, color: palette.textSecondary),
         ),
         const SizedBox(height: 12),
@@ -383,7 +402,7 @@ class _Loaded extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 32),
                   child: Center(
                     child: Text(
-                      'No PHI readings recorded today yet.',
+                      context.l10n.dashboardPhiEmpty,
                       style: TextStyle(fontSize: 13, color: palette.textSecondary),
                     ),
                   ),
@@ -402,7 +421,19 @@ class _Loaded extends StatelessWidget {
         GestureDetector(
           onTap: onHistoryTap,
           child: Text(
-            'View all readings',
+            context.l10n.dashboardViewAllReadings,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: palette.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AlertsPage())),
+          child: Text(
+            context.l10n.alertsLink,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../l10n/app_localizations.dart';
+import '../pages/alerts_page.dart';
 import '../pages/history_page.dart';
+import '../pages/logbook_page.dart';
+import '../pages/maintenance_page.dart';
 import '../pages/recommendations_page.dart';
 import '../pages/settings_page.dart';
-import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/logout.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -20,28 +24,10 @@ class AppDrawer extends StatelessWidget {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
-  Future<void> _logout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Log out?'),
-        content: const Text("You'll need to log in again to access your pond data."),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Log out')),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-    await AuthService().signOut();
-    if (context.mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
     return Drawer(
       backgroundColor: palette.surface,
       child: SafeArea(
@@ -62,22 +48,40 @@ class AppDrawer extends StatelessWidget {
             ),
             Divider(height: 1, color: palette.divider),
             const SizedBox(height: 8),
-            _DrawerItem(icon: Icons.home_outlined, label: 'Home', palette: palette, onTap: () => _goHome(context)),
+            _DrawerItem(icon: Icons.home_outlined, label: l10n.navHome, palette: palette, onTap: () => _goHome(context)),
             _DrawerItem(
               icon: Icons.show_chart,
-              label: 'History',
+              label: l10n.navHistory,
               palette: palette,
               onTap: () => _push(context, const HistoryPage()),
             ),
             _DrawerItem(
+              icon: Icons.notifications_none,
+              label: l10n.alertsNav,
+              palette: palette,
+              onTap: () => _push(context, const AlertsPage()),
+            ),
+            _DrawerItem(
+              icon: Icons.menu_book_outlined,
+              label: l10n.logbookNav,
+              palette: palette,
+              onTap: () => _push(context, const LogbookPage()),
+            ),
+            _DrawerItem(
+              icon: Icons.build_outlined,
+              label: l10n.maintenanceNav,
+              palette: palette,
+              onTap: () => _push(context, const MaintenancePage()),
+            ),
+            _DrawerItem(
               icon: Icons.lightbulb_outline,
-              label: 'Insights',
+              label: l10n.navInsights,
               palette: palette,
               onTap: () => _push(context, const RecommendationsPage()),
             ),
             _DrawerItem(
               icon: Icons.settings_outlined,
-              label: 'Settings',
+              label: l10n.settingsTitle,
               palette: palette,
               onTap: () => _push(context, const SettingsPage()),
             ),
@@ -85,10 +89,10 @@ class AppDrawer extends StatelessWidget {
             Divider(height: 1, color: palette.divider),
             _DrawerItem(
               icon: Icons.logout,
-              label: 'Logout',
+              label: l10n.logoutConfirm,
               palette: palette,
               danger: true,
-              onTap: () => _logout(context),
+              onTap: () => confirmAndLogout(context),
             ),
             const SizedBox(height: 12),
           ],
