@@ -26,4 +26,5 @@ The app displays the readings, history, and alerts.
 - **Cached data**: last known readings stay viewable offline
 - ***NEW*** **Logbook**: owners/caretakers could log their activity for easier tracking
 - ***NEW*** **Maintenance**: for the dissolved oxygen electrolyte and pH buffer changing. Along with topping-up the prepaid WiFi Modem and Gateway load
-- ***NEW*** **Admin Dashboard**: registered admins have heightened access 
+- ***NEW*** **Admin Dashboard**: registered admins have heightened access
+- ***NEW*** **Language**: Available in English and Filipino
