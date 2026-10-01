@@ -43,7 +43,7 @@ The data model and access rules are described in [docs/firebase-pond-data-model.
 - **English and Filipino**, dark mode and adjustable text size.
 
 ### For admins
-Admins log in with a username such as `admin_belicena` and get a separate area with its own blue theme:
+Admins log in with a username and get a separate area:
 - **Health:** each device's upload speed (latest, average and slowest delay over the last hour), missed readings, gaps, battery, and whether the SMS gateway phone is online.
 - **Ponds:** search ponds by name, ID, code or phone number. For each pond you can:
   - see the live sensor readings
@@ -69,58 +69,6 @@ The Firebase API key in this repo is public by design. Access is enforced by the
 
 The rules are tested against the Firebase Emulator with checks for each case, allowed and refused.
 
-## Getting started
-
-**You need:** Flutter (stable, Dart 3.10 or newer), the Android SDK, an Android phone, and the [Firebase CLI](https://firebase.google.com/docs/cli).
-
-```bash
-git clone https://github.com/ajbelicena01/catfisense.git
-cd catfisense
-flutter pub get
-flutter run
-```
-
-The repo is already set up for the project's Firebase project. To use your own, run `flutterfire configure`, enable **Email/Password** and **Anonymous** sign-in, create a Realtime Database, and deploy the rules:
-
-```bash
-firebase deploy --only database
-```
-
-### Building the APK
-
-```bash
-# For testing (slower, shows errors on screen)
-flutter build apk --debug
-
-# For demos and release
-flutter build apk --release --no-tree-shake-icons
-```
-
-> Always add `--no-tree-shake-icons` to release builds. Without it, the app shows a blank screen at startup (see the note in `pubspec.yaml`).
-
-The APK is saved in `build/app/outputs/flutter-apk/`.
-
-### Adding an admin
-
-1. In Firebase Auth, create a user with the email `admin_<name>@catfisense.app` and a password.
-2. Mark that account as an admin using its UID:
-
-   ```bash
-   firebase database:update /admins/<uid> --data '{"username": "admin_<name>"}'
-   ```
-
-   In Git Bash on Windows, put `MSYS_NO_PATHCONV=1` before the command so the `/admins/...` path isn't rewritten.
-
-3. Log in from the app with **"Admin? Log in with your username"**.
-
-## Tests
-
-```bash
-flutter test
-```
-
-The unit tests cover alert detection, device health and upload delay, thresholds, maintenance due dates, pond search, report generation and the localized splash screen.
-
 ## Project structure
 
 ```
@@ -139,34 +87,3 @@ database.rules.json   Realtime Database security rules
 
 Belicena · Barquillo · Barredo · Abiera · Torreverde · Piosca
 =======
-# CatFiSense
-
-**IoT-based smart pond monitoring system for catfish aquaculture.**
-CatFiSense tracks key water-quality parameters in real time and alerts pond owners
-before conditions become harmful to their fish, even when internet access is poor.
-
-> Capstone project, BS Information Technology (Networking), Iloilo, Philippines
-
----
-
-## About the App
-
-The CatFiSense mobile app is the pond owner's window into the sensor system.
-An ESP32-based device in the pond measures the water, does the threshold
-calculations on the device (edge computing), and uploads results to Firebase.
-The app displays the readings, history, and alerts.
-
-## Features
-
-- **Live dashboard**: current pH, temperature, dissolved oxygen, and turbidity
-- **History and trends**: charts of past readings per pond
-- **Alerts**: push notifications (FCM) when readings leave the safe range
-- **Offline SMS alerts**: the device sends SMS through its GSM/LTE module when
-  internet is unavailable
-- **Pond selector**: monitor multiple ponds
-- **Cached data**: last known readings stay viewable offline
-- ***NEW*** **Logbook**: owners/caretakers could log their activity for easier tracking
-- ***NEW*** **Maintenance**: for the dissolved oxygen electrolyte and pH buffer changing. Along with topping-up the prepaid WiFi Modem and Gateway load
-- ***NEW*** **Admin Dashboard**: registered admins have heightened access
-- ***NEW*** **Language**: Available in English and Filipino
->>>>>>> f8014d4263d4f414c4d0ecd3b78753db8f2cd994
