@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CatfiSense
 
 Water-quality monitoring for catfish ponds. An ESP32 sensor node measures **pH, dissolved oxygen (DO), ammonia and temperature** every 5 seconds and sends the readings to Firebase. This Android app lets pond owners and caretakers watch their pond live, get alerts, and keep a logbook. Admins monitor every pond, device and user from the same app.
